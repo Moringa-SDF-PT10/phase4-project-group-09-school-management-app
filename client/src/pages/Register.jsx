@@ -1,10 +1,10 @@
+import React, { useState } from 'react'
 import { Formik, Form } from 'formik'
 import * as Yup from 'yup'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 import FormInput from '../components/FormInput.jsx'
 import Toast from '../components/Toast.jsx'
-import { useState } from 'react'
 
 const Register = () => {
   const { register } = useAuth()

@@ -1,10 +1,10 @@
+import React, { useState } from 'react'
 import { Formik, Form } from 'formik'
 import * as Yup from 'yup'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 import FormInput from '../components/FormInput.jsx'
 import Toast from '../components/Toast.jsx'
-import { useState } from 'react'
 
 const Login = () => {
   const { login } = useAuth()
@@ -24,28 +24,17 @@ const Login = () => {
 
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Mock user data - in real app, this would come from API
-      const userData = {
-        id: 1,
-        email: values.email,
-        role: 'teacher', // Default role for demo
-        name: 'Demo User'
-      }
-      
-      login(userData)
+      await login(values.email, values.password)
       setToastMessage('Login successful!')
       setToastType('success')
       setShowToast(true)
       
       setTimeout(() => {
-        navigate('/')
+        navigate('/dashboard')
       }, 1000)
     } catch (error) {
-      setErrors({ submit: 'Login failed. Please try again.' })
-      setToastMessage('Login failed. Please try again.')
+      setErrors({ submit: error.message || 'Login failed. Please try again.' })
+      setToastMessage(error.message || 'Login failed. Please try again.')
       setToastType('error')
       setShowToast(true)
     } finally {

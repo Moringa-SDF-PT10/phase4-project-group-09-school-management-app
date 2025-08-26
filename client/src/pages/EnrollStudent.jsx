@@ -1,9 +1,9 @@
+import React, { useState } from 'react'
 import { Formik, Form } from 'formik'
 import * as Yup from 'yup'
 import { useNavigate, Link } from 'react-router-dom'
 import FormInput from '../components/FormInput.jsx'
 import Toast from '../components/Toast.jsx'
-import { useState } from 'react'
 
 const EnrollStudent = () => {
   const navigate = useNavigate()

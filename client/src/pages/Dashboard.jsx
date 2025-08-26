@@ -1,10 +1,10 @@
+import React, { useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
 import { Link, useNavigate } from 'react-router-dom'
 import Toast from '../components/Toast.jsx'
-import { useState } from 'react'
 
 const Dashboard = () => {
-  const { user, logout } = useAuth()
+  const { currentUser, logout } = useAuth()
   const navigate = useNavigate()
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')

@@ -1,9 +1,9 @@
+import React, { useState, useEffect } from 'react'
 import { Formik, Form } from 'formik'
 import * as Yup from 'yup'
 import { useNavigate, Link, useParams } from 'react-router-dom'
 import FormInput from '../components/FormInput.jsx'
 import Toast from '../components/Toast.jsx'
-import { useState, useEffect } from 'react'
 
 const EditClass = () => {
   const navigate = useNavigate()
