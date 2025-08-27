@@ -3,7 +3,7 @@ import NavBar from './components/NavBar'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import ClassDetails from "./pages/ClassDetails";
-import ProtectedRoute from './components/ProtectedRoute'
+import PrivateRoute from './components/PrivateRoute'
 
 export default function App() {
   return (
@@ -18,17 +18,17 @@ export default function App() {
           <Route
           path="/dashboard"
           element={
-            <protectedRoute allowedRoles={['admin', 'teacher', 'student']}>
+            <privateRoute allowedRoles={['admin', 'teacher', 'student']}>
               <Dashboard />
-            </protectedRoute>
+            </privateRoute>
           }
           />
           <Route
           path="/classes/:id"
           element={
-            <ProtectedRoute allowedRoles={['admin', 'teacher', 'student']}>
+            <PrivateRoute allowedRoles={['admin', 'teacher', 'student']}>
               <classDetails />
-            </ProtectedRoute>
+            </PrivateRoute>
           }
           />
           {/* Fallback */}

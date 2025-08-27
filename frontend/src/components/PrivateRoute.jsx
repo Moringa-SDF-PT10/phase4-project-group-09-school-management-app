@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
-export default function ProtectedRoute({ children, allowedRoles }) {
+export default function PrivateRoute({ children, allowedRoles }) {
     const { user } = useAuth()
     const location = useLocation()
 

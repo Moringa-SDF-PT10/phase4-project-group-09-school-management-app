@@ -20,7 +20,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      // ✅ Real login logic only
+      //  Real login logic only
       const response = await api.post("/auth/login", { email, password });
 
       // Save user token + role in context
