@@ -45,10 +45,15 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        throw new Error("Server error - unable to process response");
+      }
 
       if (!response.ok) {
-        throw new Error(data.message || "Login failed");
+        throw new Error(data?.message || `Login failed (${response.status})`);
       }
 
       localStorage.setItem("token", data.token);
@@ -58,8 +63,11 @@ export const AuthProvider = ({ children }) => {
       
       return data;
     } catch (err) {
-      setError(err.message);
-      throw err;
+      const errorMessage = err.name === 'TypeError' && err.message.includes('fetch')
+        ? "Unable to connect to server. Please check your connection."
+        : err.message;
+      setError(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -78,17 +86,25 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify(userData),
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        throw new Error("Server error - unable to process response");
+      }
 
       if (!response.ok) {
-        throw new Error(data.message || "Registration failed");
+        throw new Error(data?.message || `Registration failed (${response.status})`);
       }
 
       setSuccess("Registration successful! Please log in.");
       return data;
     } catch (err) {
-      setError(err.message);
-      throw err;
+      const errorMessage = err.name === 'TypeError' && err.message.includes('fetch')
+        ? "Unable to connect to server. Please check your connection."
+        : err.message;
+      setError(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
