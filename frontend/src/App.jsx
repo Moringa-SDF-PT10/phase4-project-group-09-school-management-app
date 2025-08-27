@@ -2,7 +2,7 @@ import  { Routes, Route, Navigate } from 'react-router-dom'
 import NavBar from './components/NavBar'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
-import classDetails from './pages/ClassDetails'
+import ClassDetails from "./pages/ClassDetails";
 import ProtectedRoute from './components/ProtectedRoute'
 
 export default function App() {
