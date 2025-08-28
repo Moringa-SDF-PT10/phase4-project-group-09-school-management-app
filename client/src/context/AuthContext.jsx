@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import api from "../services/api";
 
 const AuthContext = createContext();
 
@@ -36,36 +37,20 @@ export const AuthProvider = ({ children }) => {
     try {
       setError(null);
       setLoading(true);
-      
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await api.post("/auth/login", { email, password });
+      const { data } = response;
 
-      let data;
-      try {
-        data = await response.json();
-      } catch (jsonError) {
-        throw new Error("Server error - unable to process response");
+      if (data.access_token && data.user) {
+        localStorage.setItem("token", data.access_token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        setCurrentUser(data.user);
+        setSuccess("Login successful!");
+        return data;
+      } else {
+        throw new Error("Login failed: Invalid response from server.");
       }
-
-      if (!response.ok) {
-        throw new Error(data?.message || `Login failed (${response.status})`);
-      }
-
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      setCurrentUser(data.user);
-      setSuccess("Login successful!");
-      
-      return data;
     } catch (err) {
-      const errorMessage = err.name === 'TypeError' && err.message.includes('fetch')
-        ? "Unable to connect to server. Please check your connection."
-        : err.message;
+      const errorMessage = err.response?.data?.msg || err.message || "An unknown error occurred.";
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -77,32 +62,11 @@ export const AuthProvider = ({ children }) => {
     try {
       setError(null);
       setLoading(true);
-      
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(userData),
-      });
-
-      let data;
-      try {
-        data = await response.json();
-      } catch (jsonError) {
-        throw new Error("Server error - unable to process response");
-      }
-
-      if (!response.ok) {
-        throw new Error(data?.message || `Registration failed (${response.status})`);
-      }
-
+      const response = await api.post("/auth/register", userData);
       setSuccess("Registration successful! Please log in.");
-      return data;
+      return response.data;
     } catch (err) {
-      const errorMessage = err.name === 'TypeError' && err.message.includes('fetch')
-        ? "Unable to connect to server. Please check your connection."
-        : err.message;
+      const errorMessage = err.response?.data?.msg || err.message || "An unknown error occurred.";
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {

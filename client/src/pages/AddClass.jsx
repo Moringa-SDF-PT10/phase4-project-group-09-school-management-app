@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import api from '../services/api'
 import { Formik, Form } from 'formik'
 import * as Yup from 'yup'
 import { useNavigate, Link } from 'react-router-dom'
@@ -10,6 +11,7 @@ const AddClass = () => {
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
   const [toastType, setToastType] = useState('success')
+  const [teachers, setTeachers] = useState([])
 
   const validationSchema = Yup.object({
     name: Yup.string()
@@ -26,43 +28,45 @@ const AddClass = () => {
       .required('Schedule is required'),
     location: Yup.string()
       .required('Location is required'),
-    teacher: Yup.string()
+    teacher_id: Yup.number()
       .required('Teacher is required')
   })
 
-  const teacherOptions = [
-    { value: 'john_doe', label: 'John Doe - Mathematics' },
-    { value: 'jane_smith', label: 'Jane Smith - Physics' },
-    { value: 'mike_johnson', label: 'Mike Johnson - Chemistry' },
-    { value: 'sarah_wilson', label: 'Sarah Wilson - Biology' },
-    { value: 'david_brown', label: 'David Brown - English' }
-  ]
+  useEffect(() => {
+    const fetchTeachers = async () => {
+      try {
+        const response = await api.get('/users');
+        const teacherUsers = response.data.users.filter(user => user.role === 'teacher');
+        setTeachers(teacherUsers.map(t => ({ value: t.id, label: t.name })));
+      } catch (error) {
+        console.error('Failed to fetch teachers:', error);
+        setToastMessage('Could not load teachers list.');
+        setToastType('error');
+        setShowToast(true);
+      }
+    };
+    fetchTeachers();
+  }, []);
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Mock success - in real app, this would save to database
-      console.log('New class data:', values)
-      
-      setToastMessage('Class created successfully!')
-      setToastType('success')
-      setShowToast(true)
-      
-      resetForm()
-      
+      await api.post('/classes', values);
+      setToastMessage('Class created successfully!');
+      setToastType('success');
+      setShowToast(true);
+      resetForm();
       setTimeout(() => {
-        navigate('/')
-      }, 1500)
+        navigate('/classes');
+      }, 1500);
     } catch (error) {
-      setToastMessage('Failed to create class. Please try again.')
-      setToastType('error')
-      setShowToast(true)
+      console.error('Failed to create class:', error);
+      setToastMessage(error.response?.data?.msg || 'Failed to create class.');
+      setToastType('error');
+      setShowToast(true);
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -75,7 +79,7 @@ const AddClass = () => {
               <p className="text-gray-600 mt-2">Create a new class with all necessary details</p>
             </div>
             <Link
-              to="/"
+              to="/classes"
               className="btn-secondary"
             >
               ← Back to Dashboard
@@ -92,7 +96,7 @@ const AddClass = () => {
               capacity: '',
               schedule: '',
               location: '',
-              teacher: ''
+              teacher_id: ''
             }}
             validationSchema={validationSchema}
             onSubmit={handleSubmit}
@@ -140,9 +144,9 @@ const AddClass = () => {
                   
                   <FormInput
                     label="Teacher"
-                    name="teacher"
+                    name="teacher_id"
                     type="select"
-                    options={teacherOptions}
+                    options={teachers}
                     required
                   />
                 </div>
@@ -157,7 +161,7 @@ const AddClass = () => {
                   </button>
                   
                   <Link
-                    to="/"
+                    to="/classes"
                     className="btn-secondary flex-1 text-center"
                   >
                     Cancel

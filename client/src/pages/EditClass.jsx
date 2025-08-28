@@ -1,18 +1,20 @@
-import React, { useState, useEffect } from 'react'
-import { Formik, Form } from 'formik'
-import * as Yup from 'yup'
-import { useNavigate, Link, useParams } from 'react-router-dom'
-import FormInput from '../components/FormInput.jsx'
-import Toast from '../components/Toast.jsx'
+import React, { useState, useEffect } from 'react';
+import { Formik, Form } from 'formik';
+import * as Yup from 'yup';
+import { useNavigate, Link, useParams } from 'react-router-dom';
+import FormInput from '../components/FormInput.jsx';
+import Toast from '../components/Toast.jsx';
+import api from '../services/api.js';
 
 const EditClass = () => {
-  const navigate = useNavigate()
-  const { id } = useParams()
-  const [showToast, setShowToast] = useState(false)
-  const [toastMessage, setToastMessage] = useState('')
-  const [toastType, setToastType] = useState('success')
-  const [loading, setLoading] = useState(true)
-  const [classData, setClassData] = useState(null)
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState('success');
+  const [loading, setLoading] = useState(true);
+  const [classData, setClassData] = useState(null);
+  const [teachers, setTeachers] = useState([]);
 
   const validationSchema = Yup.object({
     name: Yup.string()
@@ -25,80 +27,60 @@ const EditClass = () => {
       .min(1, 'Capacity must be at least 1')
       .max(100, 'Capacity cannot exceed 100')
       .required('Capacity is required'),
-    schedule: Yup.string()
-      .required('Schedule is required'),
-    location: Yup.string()
-      .required('Location is required'),
-    teacher: Yup.string()
-      .required('Teacher is required')
-  })
+    schedule: Yup.string().required('Schedule is required'),
+    location: Yup.string().required('Location is required'),
+    teacher_id: Yup.number().required('Teacher is required'),
+  });
 
-  const teacherOptions = [
-    { value: 'john_doe', label: 'John Doe - Mathematics' },
-    { value: 'jane_smith', label: 'Jane Smith - Physics' },
-    { value: 'mike_johnson', label: 'Mike Johnson - Chemistry' },
-    { value: 'sarah_wilson', label: 'Sarah Wilson - Biology' },
-    { value: 'david_brown', label: 'David Brown - English' }
-  ]
-
-  // Mock class data - in real app, this would come from API
   useEffect(() => {
-    const fetchClassData = async () => {
+    const fetchData = async () => {
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 500))
+        const [classRes, usersRes] = await Promise.all([
+          api.get(`/classes/${id}`),
+          api.get('/users'),
+        ]);
         
-        const mockData = {
-          id: id,
-          name: 'Advanced Mathematics 101',
-          description: 'Advanced level mathematics course covering calculus, linear algebra, and mathematical analysis.',
-          capacity: 25,
-          schedule: 'Mon/Wed/Fri 9:00 AM - 10:30 AM',
-          location: 'Room 201, Building A',
-          teacher: 'john_doe'
-        }
+        setClassData(classRes.data);
         
-        setClassData(mockData)
+        const teacherUsers = usersRes.data.users.filter(user => user.role === 'teacher');
+        setTeachers(teacherUsers.map(t => ({ value: t.id, label: t.name })));
+        
       } catch (error) {
-        console.error('Failed to fetch class data:', error)
+        console.error('Failed to load data:', error);
+        setToastMessage('Failed to load required data.');
+        setToastType('error');
+        setShowToast(true);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-
-    fetchClassData()
-  }, [id])
+    };
+    fetchData();
+  }, [id]);
 
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Mock success - in real app, this would update database
-      console.log('Updated class data:', values)
-      
-      setToastMessage('Class updated successfully!')
-      setToastType('success')
-      setShowToast(true)
-      
+      await api.put(`/classes/${id}`, values);
+      setToastMessage('Class updated successfully!');
+      setToastType('success');
+      setShowToast(true);
       setTimeout(() => {
-        navigate('/')
-      }, 1500)
+        navigate('/classes');
+      }, 1500);
     } catch (error) {
-      setToastMessage('Failed to update class. Please try again.')
-      setToastType('error')
-      setShowToast(true)
+      setToastMessage(error.response?.data?.msg || 'Failed to update class.');
+      setToastType('error');
+      setShowToast(true);
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
       </div>
-    )
+    );
   }
 
   if (!classData) {
@@ -106,46 +88,42 @@ const EditClass = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Class not found</h2>
-          <Link to="/" className="btn-primary">
-            Back to Dashboard
+          <Link to="/classes" className="btn-primary">
+            Back to Class List
           </Link>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
-        {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Edit Class</h1>
               <p className="text-gray-600 mt-2">Update class information and details</p>
             </div>
-            <Link
-              to="/"
-              className="btn-secondary"
-            >
-              ← Back to Dashboard
+            <Link to="/classes" className="btn-secondary">
+              ← Back to Class List
             </Link>
           </div>
         </div>
 
-        {/* Form */}
         <div className="form-container">
           <Formik
             initialValues={{
-              name: classData.name,
-              description: classData.description,
-              capacity: classData.capacity,
-              schedule: classData.schedule,
-              location: classData.location,
-              teacher: classData.teacher
+              name: classData.name || '',
+              description: classData.description || '',
+              capacity: classData.capacity || '',
+              schedule: classData.schedule || '',
+              location: classData.location || '',
+              teacher_id: classData.teacher?.id || '',
             }}
             validationSchema={validationSchema}
             onSubmit={handleSubmit}
+            enableReinitialize
           >
             {({ isSubmitting }) => (
               <Form className="space-y-6">
@@ -155,14 +133,12 @@ const EditClass = () => {
                   placeholder="e.g., Advanced Mathematics 101"
                   required
                 />
-                
                 <FormInput
                   label="Description"
                   name="description"
                   placeholder="Brief description of the class content and objectives"
                   required
                 />
-                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormInput
                     label="Capacity"
@@ -171,7 +147,6 @@ const EditClass = () => {
                     placeholder="Maximum number of students"
                     required
                   />
-                  
                   <FormInput
                     label="Schedule"
                     name="schedule"
@@ -179,7 +154,6 @@ const EditClass = () => {
                     required
                   />
                 </div>
-                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormInput
                     label="Location"
@@ -187,16 +161,14 @@ const EditClass = () => {
                     placeholder="e.g., Room 201, Building A"
                     required
                   />
-                  
                   <FormInput
                     label="Teacher"
-                    name="teacher"
+                    name="teacher_id"
                     type="select"
-                    options={teacherOptions}
+                    options={teachers}
                     required
                   />
                 </div>
-
                 <div className="flex space-x-4 pt-4">
                   <button
                     type="submit"
@@ -205,11 +177,7 @@ const EditClass = () => {
                   >
                     {isSubmitting ? 'Updating Class...' : 'Update Class'}
                   </button>
-                  
-                  <Link
-                    to="/"
-                    className="btn-secondary flex-1 text-center"
-                  >
+                  <Link to="/classes" className="btn-secondary flex-1 text-center">
                     Cancel
                   </Link>
                 </div>
@@ -227,7 +195,7 @@ const EditClass = () => {
         />
       )}
     </div>
-  )
-}
+  );
+};
 
-export default EditClass
+export default EditClass;
