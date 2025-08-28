@@ -1,0 +1,34 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pkl
+*.log
+
+# Virtual environment
+venv/
+.env/
+
+# Flask instance folder
+instance/
+
+# Database files
+*.sqlite3
+*.db
+
+# Migrations (optional, if auto-generated)
+migrations/
+
+# VS Code settings
+.vscode/
+*.code-workspace
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+*.env
+.env.local
+.env.*.local
