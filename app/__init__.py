@@ -28,12 +28,14 @@ def create_app():
     from .routes.classes import classes_bp
     from .routes.enrollments import enrollments_bp
     from .routes.grades import grades_bp
+    from .routes.dashboard import dashboard_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(users_bp, url_prefix="/api/users")
     app.register_blueprint(classes_bp, url_prefix="/api/classes")
     app.register_blueprint(enrollments_bp, url_prefix="/api/enrollments")
     app.register_blueprint(grades_bp, url_prefix="/api/grades")
+    app.register_blueprint(dashboard_bp, url_prefix="/api/dashboard")
 
     @app.get("/api/health")
     def health():

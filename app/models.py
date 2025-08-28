@@ -41,6 +41,9 @@ class Class(db.Model):
     name = db.Column(db.String(120), nullable=False)
     description = db.Column(db.Text, default="")
     teacher_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    capacity = db.Column(db.Integer)
+    schedule = db.Column(db.String(120))
+    location = db.Column(db.String(120))
 
     teacher = db.relationship("User", back_populates="classes_taught")
     enrollments = db.relationship("Enrollment", back_populates="class_", cascade="all, delete-orphan")
@@ -51,6 +54,9 @@ class Class(db.Model):
             "name": self.name,
             "description": self.description,
             "teacher": self.teacher.to_dict() if self.teacher else None,
+            "capacity": self.capacity,
+            "schedule": self.schedule,
+            "location": self.location,
         }
         if include_students:
             data["enrollments"] = [e.to_dict(include_grades=True) for e in self.enrollments]
