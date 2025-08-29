@@ -89,7 +89,7 @@ const Register = () => {
           <div className="mx-auto bg-white rounded-2xl p-4 shadow-lg w-20 h-20 flex items-center justify-center mb-4">
             <AcademicCapIcon className="h-10 w-10 text-blue-600" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Join Ustadi School Management</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Join Ustadi School System</h1>
           <p className="text-gray-600">Create your account to get started</p>
         </div>
 
