@@ -1,5 +1,6 @@
 import React from 'react';
 import { Field, ErrorMessage } from 'formik';
+import { ExclamationCircleIcon, CheckCircleIcon } from '@heroicons/react/solid';
 
 const FormInput = ({ 
   label, 
@@ -8,55 +9,84 @@ const FormInput = ({
   placeholder, 
   required = false,
   options = null,
-  disabled = false
+  disabled = false,
+  helperText = null,
+  showSuccess = false,
+  className = ''
 }) => {
-  const baseInputClasses = "w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors duration-200";
+  const baseInputClasses = "w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors duration-200 font-normal";
   
   const stateClasses = disabled 
     ? "bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed" 
-    : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-200 placeholder-gray-500";
-  
-  const inputClasses = `${baseInputClasses} ${stateClasses}`;
-  
-  if (type === 'select' && options) {
-    return (
-      <div className="mb-6">
-        <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-2">
-          {label} {required && <span className="text-red-500">*</span>}
-        </label>
-        <Field
-          as="select"
-          name={name}
-          disabled={disabled}
-          className={inputClasses}
-        >
-          <option value="">Select {label}</option>
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </Field>
-        <ErrorMessage name={name} component="div" className="text-red-600 text-sm mt-2 flex items-center" />
-      </div>
-    );
-  }
+    : "bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-200 placeholder-gray-400";
 
-  if (type === 'textarea') {
+  const inputClasses = `${baseInputClasses} ${stateClasses} ${className}`;
+  
+  const renderField = () => {
+    switch (type) {
+      case 'select':
+        return (
+          <Field
+            as="select"
+            name={name}
+            disabled={disabled}
+            className={inputClasses}
+          >
+            <option value="">Select {label}</option>
+            {options.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </Field>
+        );
+      
+      case 'textarea':
+        return (
+          <Field
+            as="textarea"
+            name={name}
+            placeholder={placeholder}
+            disabled={disabled}
+            rows={4}
+            className={inputClasses}
+          />
+        );
+      
+      case 'checkbox':
+        return (
+          <label className="flex items-center space-x-3">
+            <Field
+              type="checkbox"
+              name={name}
+              disabled={disabled}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            />
+            <span className="text-sm text-gray-700">{label}</span>
+          </label>
+        );
+      
+      default:
+        return (
+          <Field
+            type={type}
+            name={name}
+            placeholder={placeholder}
+            disabled={disabled}
+            className={inputClasses}
+          />
+        );
+    }
+  };
+
+  if (type === 'checkbox') {
     return (
-      <div className="mb-6">
-        <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-2">
-          {label} {required && <span className="text-red-500">*</span>}
-        </label>
-        <Field
-          as="textarea"
-          name={name}
-          placeholder={placeholder}
-          disabled={disabled}
-          rows={4}
-          className={inputClasses}
-        />
-        <ErrorMessage name={name} component="div" className="text-red-600 text-sm mt-2 flex items-center" />
+      <div className="mb-4">
+        {renderField()}
+        <ErrorMessage name={name} component={ErrorMessageWithIcon} />
+        {helperText && (
+          <p className="text-sm text-gray-500 mt-1">{helperText}</p>
+        )}
       </div>
     );
   }
@@ -66,23 +96,29 @@ const FormInput = ({
       <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-2">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
-      <Field
-        type={type}
-        name={name}
-        placeholder={placeholder}
-        disabled={disabled}
-        className={inputClasses}
-      />
-      <ErrorMessage name={name} component="div" className="text-red-600 text-sm mt-2 flex items-center" />
+      
+      <div className="relative">
+        {renderField()}
+        
+        {showSuccess && (
+          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+            <CheckCircleIcon className="h-5 w-5 text-green-500" />
+          </div>
+        )}
+      </div>
+      
+      {helperText && (
+        <p className="text-sm text-gray-500 mt-1">{helperText}</p>
+      )}
+      
+      <ErrorMessage name={name} component={ErrorMessageWithIcon} />
     </div>
   );
 };
 
 const ErrorMessageWithIcon = ({ children }) => (
   <div className="text-red-600 text-sm mt-2 flex items-center">
-    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-    </svg>
+    <ExclamationCircleIcon className="w-4 h-4 mr-1" />
     {children}
   </div>
 );
