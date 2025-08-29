@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext();
 
@@ -15,22 +16,34 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is already logged in (from localStorage)
-    const token = localStorage.getItem("token");
-    const user = localStorage.getItem("user");
+    const token = localStorage.getItem("auth_token");
+    const user = localStorage.getItem("auth_user");
     
     if (token && user) {
       try {
-        setCurrentUser(JSON.parse(user));
+        const parsedUser = JSON.parse(user);
+        setCurrentUser(parsedUser);
+        
+        setAuthToken(token);
       } catch (e) {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+        console.error("Error parsing stored user data:", e);
+        clearStoredAuth();
       }
     }
     setLoading(false);
   }, []);
+
+  const setAuthToken = (token) => {
+    localStorage.setItem("auth_token", token);
+  };
+
+  const clearStoredAuth = () => {
+    localStorage.removeItem("auth_token");
+    localStorage.removeItem("auth_user");
+  };
 
   const login = async (email, password) => {
     try {
@@ -45,27 +58,36 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify({ email, password }),
       });
 
-      let data;
-      try {
-        data = await response.json();
-      } catch (jsonError) {
-        throw new Error("Server error - unable to process response");
-      }
-
       if (!response.ok) {
-        throw new Error(data?.message || `Login failed (${response.status})`);
+        const errorText = await response.text();
+        throw new Error(errorText || `Login failed (${response.status})`);
       }
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      const data = await response.json();
+
+      if (!data.token || !data.user) {
+        throw new Error("Invalid response from server");
+      }
+
+      localStorage.setItem("auth_token", data.token);
+      localStorage.setItem("auth_user", JSON.stringify(data.user));
       setCurrentUser(data.user);
-      setSuccess("Login successful!");
+      setAuthToken(data.token);
+      
+      setSuccess("Login successful! Redirecting...");
+      
+      setTimeout(() => {
+        const redirectPath = data.user.role === 'admin' ? '/admin' : 
+                           data.user.role === 'teacher' ? '/teacher' : '/student';
+        navigate(redirectPath);
+      }, 1000);
       
       return data;
     } catch (err) {
       const errorMessage = err.name === 'TypeError' && err.message.includes('fetch')
         ? "Unable to connect to server. Please check your connection."
         : err.message;
+      
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -86,23 +108,31 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify(userData),
       });
 
-      let data;
-      try {
-        data = await response.json();
-      } catch (jsonError) {
-        throw new Error("Server error - unable to process response");
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || `Registration failed (${response.status})`);
       }
 
-      if (!response.ok) {
-        throw new Error(data?.message || `Registration failed (${response.status})`);
-      }
+      const data = await response.json();
 
       setSuccess("Registration successful! Please log in.");
+      
+      if (data.token && data.user) {
+        localStorage.setItem("auth_token", data.token);
+        localStorage.setItem("auth_user", JSON.stringify(data.user));
+        setCurrentUser(data.user);
+        setAuthToken(data.token);
+        
+        setSuccess("Registration successful! Redirecting...");
+        setTimeout(() => navigate('/dashboard'), 1000);
+      }
+      
       return data;
     } catch (err) {
       const errorMessage = err.name === 'TypeError' && err.message.includes('fetch')
         ? "Unable to connect to server. Please check your connection."
         : err.message;
+      
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -111,10 +141,18 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    clearStoredAuth();
     setCurrentUser(null);
     setSuccess("Logged out successfully");
+    navigate('/login');
+  };
+
+  const updateUser = (updatedUserData) => {
+    if (currentUser) {
+      const updatedUser = { ...currentUser, ...updatedUserData };
+      setCurrentUser(updatedUser);
+      localStorage.setItem("auth_user", JSON.stringify(updatedUser));
+    }
   };
 
   const clearMessages = () => {
@@ -122,15 +160,25 @@ export const AuthProvider = ({ children }) => {
     setSuccess(null);
   };
 
+  useEffect(() => {
+    if (error || success) {
+      const timer = setTimeout(clearMessages, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error, success]);
+
   const value = {
     currentUser,
     login,
     register,
     logout,
+    updateUser,
     loading,
     error,
     success,
     clearMessages,
+    isAuthenticated: !!currentUser,
+    userRole: currentUser?.role || null,
   };
 
   return (
@@ -138,4 +186,41 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
+};
+
+export const useAuthApi = () => {
+  const { currentUser } = useAuth();
+
+  const authFetch = async (url, options = {}) => {
+    const token = localStorage.getItem("auth_token");
+    
+    const headers = {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    });
+
+    if (response.status === 401) {
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("auth_user");
+      window.location.href = '/login';
+      throw new Error("Authentication expired. Please log in again.");
+    }
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    return response.json();
+  };
+
+  return { authFetch };
 };
