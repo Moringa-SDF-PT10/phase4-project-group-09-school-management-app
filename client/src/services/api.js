@@ -1,8 +1,12 @@
 import axios from "axios";
 import { toast } from 'react-toastify';
 
+console.log('API Base URL:', import.meta.env.VITE_API_BASE_URL);
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api",
+  baseURL: `${API_BASE_URL}/api`,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
@@ -15,37 +19,59 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    if (config.method?.toLowerCase() === 'get') {
+      config.params = {
+        ...config.params,
+        _t: Date.now()
+      };
+    }
+    
+    console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
     return config;
   },
   (error) => {
+    console.error('Request Error:', error);
     return Promise.reject(error);
   }
 );
 
+// Response interceptor
 api.interceptors.response.use(
   (response) => {
+    console.log(`API Response: ${response.status} ${response.config.url}`);
     return response;
   },
   (error) => {
     const { response } = error;
     
+    console.error('API Error:', {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: response?.status,
+      data: response?.data
+    });
+
     if (response) {
       const { status, data } = response;
       
       switch (status) {
         case 401:
-          localStorage.removeItem("auth_token");
-          localStorage.removeItem("auth_user");
-          window.location.href = "/login";
-          toast.error("Session expired. Please log in again.");
+          if (!window.location.pathname.includes('/login')) {
+            localStorage.removeItem("auth_token");
+            localStorage.removeItem("auth_user");
+            toast.error("Session expired. Please log in again.");
+            window.location.href = "/login";
+          }
           break;
           
         case 403:
-          toast.error("You don't have permission to perform this action.");
+          toast.error(data?.message || "You don't have permission to perform this action.");
           break;
           
         case 404:
-          toast.error("The requested resource was not found.");
+          // Don't show toast for 404 errors to avoid spam
+          console.warn("Resource not found:", error.config.url);
           break;
           
         case 422:
@@ -53,7 +79,7 @@ api.interceptors.response.use(
             const errorMessages = Object.values(data.errors).flat();
             errorMessages.forEach(msg => toast.error(msg));
           } else {
-            toast.error(data.message || "Validation failed.");
+            toast.error(data.message || "Validation failed. Please check your input.");
           }
           break;
           
@@ -66,14 +92,14 @@ api.interceptors.response.use(
           break;
           
         default:
-          toast.error(data?.message || "An unexpected error occurred.");
+          if (data?.message) {
+            toast.error(data.message);
+          }
       }
     } else if (error.code === "ECONNABORTED") {
       toast.error("Request timeout. Please check your connection and try again.");
-    } else if (error.code === "NETWORK_ERROR") {
+    } else if (error.code === "NETWORK_ERROR" || !error.response) {
       toast.error("Network error. Please check your internet connection.");
-    } else {
-      toast.error("An unexpected error occurred. Please try again.");
     }
     
     return Promise.reject(error);
@@ -90,27 +116,22 @@ export const apiService = {
     }
   },
 
-  // GET request
   async get(url, config = {}) {
     return this.request({ method: "get", url, ...config });
   },
 
-  // POST request
   async post(url, data = {}, config = {}) {
     return this.request({ method: "post", url, data, ...config });
   },
 
-  // PUT request
   async put(url, data = {}, config = {}) {
     return this.request({ method: "put", url, data, ...config });
   },
 
-  // PATCH request
   async patch(url, data = {}, config = {}) {
     return this.request({ method: "patch", url, data, ...config });
   },
 
-  // DELETE request
   async delete(url, config = {}) {
     return this.request({ method: "delete", url, ...config });
   },
@@ -124,6 +145,7 @@ export const apiService = {
         "Content-Type": "multipart/form-data",
       },
       onUploadProgress,
+      timeout: 30000, 
     });
   },
 
@@ -159,17 +181,16 @@ export const apiService = {
         status,
         message: data?.message || `Server error: ${status}`,
         errors: data?.errors,
+        data: data,
         originalError: error,
       };
     } else if (error.request) {
-      // Request was made but no response received
       return {
         status: null,
         message: "Network error. Please check your connection.",
         originalError: error,
       };
     } else {
-
       return {
         status: null,
         message: error.message || "An unexpected error occurred.",
@@ -180,123 +201,199 @@ export const apiService = {
 
   auth: {
     async login(credentials) {
-      return api.post("/auth/login", credentials);
+      return apiService.post("/auth/login", credentials);
     },
 
     async register(userData) {
-      return api.post("/auth/register", userData);
+      return apiService.post("/auth/register", userData);
     },
 
     async logout() {
-      return api.post("/auth/logout");
+      return apiService.post("/auth/logout");
     },
 
     async refreshToken() {
-      return api.post("/auth/refresh");
+      return apiService.post("/auth/refresh");
     },
 
     async getProfile() {
-      return api.get("/auth/profile");
+      return apiService.get("/auth/profile");
+    },
+
+    async updateProfile(userData) {
+      return apiService.put("/auth/profile", userData);
+    },
+
+    async changePassword(passwordData) {
+      return apiService.post("/auth/change-password", passwordData);
     },
   },
 
   users: {
     async getAll(params = {}) {
-      return api.get("/users", { params });
+      return apiService.get("/users", { params });
     },
 
     async getById(id) {
-      return api.get(`/users/${id}`);
+      return apiService.get(`/users/${id}`);
     },
 
     async create(userData) {
-      return api.post("/users", userData);
+      return apiService.post("/users", userData);
     },
 
     async update(id, userData) {
-      return api.put(`/users/${id}`, userData);
+      return apiService.put(`/users/${id}`, userData);
     },
 
     async delete(id) {
-      return api.delete(`/users/${id}`);
+      return apiService.delete(`/users/${id}`);
+    },
+
+    async search(query) {
+      return apiService.get("/users/search", { params: { q: query } });
     },
   },
 
   classes: {
     async getAll(params = {}) {
-      return api.get("/classes", { params });
+      return apiService.get("/classes", { params });
     },
 
     async getById(id) {
-      return api.get(`/classes/${id}`);
+      return apiService.get(`/classes/${id}`);
     },
 
     async create(classData) {
-      return api.post("/classes", classData);
+      return apiService.post("/classes", classData);
     },
 
     async update(id, classData) {
-      return api.put(`/classes/${id}`, classData);
+      return apiService.put(`/classes/${id}`, classData);
     },
 
     async delete(id) {
-      return api.delete(`/classes/${id}`);
+      return apiService.delete(`/classes/${id}`);
     },
 
     async getStudents(classId) {
-      return api.get(`/classes/${classId}/students`);
+      return apiService.get(`/classes/${classId}/students`);
     },
 
     async enrollStudent(classId, studentData) {
-      return api.post(`/classes/${classId}/enroll`, studentData);
+      return apiService.post(`/classes/${classId}/enroll`, studentData);
+    },
+
+    async unenrollStudent(classId, studentId) {
+      return apiService.delete(`/classes/${classId}/students/${studentId}`);
+    },
+
+    async getSchedule(classId) {
+      return apiService.get(`/classes/${classId}/schedule`);
     },
   },
 
   grades: {
     async getAll(params = {}) {
-      return api.get("/grades", { params });
+      return apiService.get("/grades", { params });
     },
 
     async getById(id) {
-      return api.get(`/grades/${id}`);
+      return apiService.get(`/grades/${id}`);
     },
 
     async create(gradeData) {
-      return api.post("/grades", gradeData);
+      return apiService.post("/grades", gradeData);
     },
 
     async update(id, gradeData) {
-      return api.put(`/grades/${id}`, gradeData);
+      return apiService.put(`/grades/${id}`, gradeData);
     },
 
     async delete(id) {
-      return api.delete(`/grades/${id}`);
+      return apiService.delete(`/grades/${id}`);
     },
 
     async getStudentGrades(studentId) {
-      return api.get(`/students/${studentId}/grades`);
+      return apiService.get(`/students/${studentId}/grades`);
     },
 
     async getClassGrades(classId) {
-      return api.get(`/classes/${classId}/grades`);
+      return apiService.get(`/classes/${classId}/grades`);
+    },
+
+    async bulkUpdate(gradesData) {
+      return apiService.post("/grades/bulk", gradesData);
     },
   },
 
   enrollments: {
     async getAll(params = {}) {
-      return api.get("/enrollments", { params });
+      return apiService.get("/enrollments", { params });
     },
 
     async getById(id) {
-      return api.get(`/enrollments/${id}`);
+      return apiService.get(`/enrollments/${id}`);
+    },
+
+    async create(enrollmentData) {
+      return apiService.post("/enrollments", enrollmentData);
     },
 
     async update(id, enrollmentData) {
-      return api.put(`/enrollments/${id}`, enrollmentData);
+      return apiService.put(`/enrollments/${id}`, enrollmentData);
     },
 
     async delete(id) {
-      return api.delete(`/enrollments/${id}`);
+      return apiService.delete(`/enrollments/${id}`);
+    },
+
+    async getStudentEnrollments(studentId) {
+      return apiService.get(`/students/${studentId}/enrollments`);
+    },
+  },
+
+  students: {
+    async getAll(params = {}) {
+      return apiService.get("/students", { params });
+    },
+
+    async getById(id) {
+      return apiService.get(`/students/${id}`);
+    },
+
+    async create(studentData) {
+      return apiService.post("/students", studentData);
+    },
+
+    async update(id, studentData) {
+      return apiService.put(`/students/${id}`, studentData);
+    },
+
+    async delete(id) {
+      return apiService.delete(`/students/${id}`);
+    },
+
+    async search(query) {
+      return apiService.get("/students/search", { params: { q: query } });
+    },
+  },
+
+  stats: {
+    async getDashboard() {
+      return apiService.get("/stats/dashboard");
+    },
+
+    async getClassStats(classId) {
+      return apiService.get(`/stats/classes/${classId}`);
+    },
+
+    async getStudentStats(studentId) {
+      return apiService.get(`/stats/students/${studentId}`);
+    },
+
+    async getGradeDistribution(classId) {
+      return apiService.get(`/stats/classes/${classId}/grade-distribution`);
     },
   },
 };
@@ -317,6 +414,16 @@ export const apiStatus = {
   isError(status) {
     return status >= 400;
   },
+};
+
+export const checkApiHealth = async () => {
+  try {
+    const response = await api.get('/health');
+    return response.status === 200;
+  } catch (error) {
+    console.error('API health check failed:', error);
+    return false;
+  }
 };
 
 export { api as axiosInstance };
