@@ -73,7 +73,7 @@ const Toast = ({
         return 'bottom-4 right-4';
       case 'bottom-center':
         return 'bottom-4 left-1/2 transform -translate-x-1/2';
-      default: // top-right
+      default: 
         return 'top-4 right-4';
     }
   };
@@ -84,7 +84,7 @@ const Toast = ({
   return (
     <div className={`fixed ${positionStyles} z-50 max-w-sm w-full animate-slide-in`}>
       <div className={`${styles.bg} ${styles.border} rounded-lg shadow-lg overflow-hidden`}>
-        {/* Progress bar */}
+
         {showProgress && duration > 0 && (
           <div className="w-full h-1 bg-gray-200">
             <div 
@@ -97,7 +97,6 @@ const Toast = ({
           </div>
         )}
         
-        {/* Toast content */}
         <div className="p-4 flex items-start space-x-3">
           <div className="flex-shrink-0">
             {styles.icon}
@@ -124,7 +123,6 @@ const Toast = ({
         </div>
       </div>
 
-      {/* Animation styles */}
       <style jsx>{`
         @keyframes slideIn {
           from {
