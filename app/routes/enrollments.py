@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from app import db
 from app.models import Enrollment, Class, User, Role, EnrollmentStatus
 from app.utils import role_required
+from datetime import datetime
 
 enrollments_bp = Blueprint('enrollments', __name__)
 
@@ -31,6 +32,52 @@ def get_teacher_enrollments():
         })
     
     return jsonify(enrollment_list), 200
+
+
+@enrollments_bp.post('/')
+@jwt_required()
+@role_required('admin')
+def create_enrollment():
+    data = request.get_json()
+    student_id = data.get('student_id')
+    class_id = data.get('class_id')
+    enrollment_date_str = data.get('enrollment_date')
+
+    if not all([student_id, class_id, enrollment_date_str]):
+        return jsonify({'msg': 'Missing required fields'}), 400
+
+    # Validate student and class
+    student = User.query.get_or_404(student_id)
+    if student.role != Role.student:
+        return jsonify({'msg': 'User is not a student'}), 400
+    
+    class_to_enroll = Class.query.get_or_404(class_id)
+
+    # Check for existing enrollment
+    existing_enrollment = Enrollment.query.filter_by(student_id=student_id, class_id=class_id).first()
+    if existing_enrollment:
+        return jsonify({'msg': 'Student is already enrolled in this class'}), 409
+
+    # Check class capacity
+    if class_to_enroll.capacity is not None and len(class_to_enroll.enrollments) >= class_to_enroll.capacity:
+        return jsonify({'msg': 'Class is at full capacity'}), 409
+
+    try:
+        enrollment_date = datetime.fromisoformat(enrollment_date_str.replace('Z', '+00:00')).date()
+    except ValueError:
+        return jsonify({'msg': 'Invalid date format for enrollment_date'}), 400
+
+    new_enrollment = Enrollment(
+        student_id=student_id,
+        class_id=class_id,
+        enrollment_date=enrollment_date,
+        status=EnrollmentStatus.active
+    )
+    db.session.add(new_enrollment)
+    db.session.commit()
+
+    return jsonify({'msg': 'Student enrolled successfully', 'enrollment': new_enrollment.to_dict()}), 201
+
 
 @enrollments_bp.route('/enroll/<int:class_id>', methods=['POST'])
 @jwt_required()

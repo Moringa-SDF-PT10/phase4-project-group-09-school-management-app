@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from .. import db
 from ..models import Class, User, Role
@@ -83,3 +83,14 @@ def my_teaching_classes():
     teacher_id = get_jwt_identity()
     classes = Class.query.filter_by(teacher_id=teacher_id).all()
     return {"classes": [c.to_dict() for c in classes]}, 200
+
+
+@classes_bp.get("/options")
+@role_required("admin")
+def get_class_options():
+    classes = Class.query.order_by(Class.name).all()
+    class_options = [
+        {"value": cls.id, "label": f"{cls.name}"}
+        for cls in classes
+    ]
+    return jsonify(class_options), 200

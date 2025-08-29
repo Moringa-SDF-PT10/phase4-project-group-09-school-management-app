@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
 from .. import db
 from ..models import Grade, Enrollment, Class, User
@@ -95,3 +95,17 @@ def batch_update_grades(class_id):
 
     db.session.commit()
     return {"msg": "Grades updated successfully"}, 200
+
+
+@grades_bp.get("/assignment-types")
+def get_assignment_types():
+    assignment_types = [
+        {"value": "homework", "label": "Homework"},
+        {"value": "quiz", "label": "Quiz"},
+        {"value": "exam", "label": "Exam"},
+        {"value": "project", "label": "Project"},
+        {"value": "participation", "label": "Participation"},
+        {"value": "lab", "label": "Laboratory"},
+    ]
+    return jsonify(assignment_types), 200
+

@@ -1,5 +1,5 @@
 import logging
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from ..models import db, User, Role
 from ..utils import role_required
@@ -21,6 +21,17 @@ def me():
 def list_users():
     users = User.query.all()
     return {"users": [u.to_dict() for u in users]}, 200
+
+
+@users_bp.get("/students")
+@role_required("admin")
+def list_students():
+    students = User.query.filter_by(role=Role.student).all()
+    student_options = [
+        {"value": student.id, "label": f"{student.name} - ID: {student.id:03d}"}
+        for student in students
+    ]
+    return jsonify(student_options), 200
 
 # Admin: Create a new Student or Teacher
 @users_bp.post("/")

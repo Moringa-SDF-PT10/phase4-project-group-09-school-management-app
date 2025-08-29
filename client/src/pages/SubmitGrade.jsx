@@ -11,21 +11,26 @@ const SubmitGrade = () => {
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
   const [toastType, setToastType] = useState('success')
-  const [enrollmentOptions, setEnrollmentOptions] = useState([])
+  const [enrollmentOptions, setEnrollmentOptions] = useState([]);
+  const [assignmentTypeOptions, setAssignmentTypeOptions] = useState([]);
 
   useEffect(() => {
-    const fetchEnrollments = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.get('/enrollments/teacher/enrollments');
-        setEnrollmentOptions(response.data);
+        const [enrollmentsRes, assignmentTypesRes] = await Promise.all([
+          api.get('/enrollments/teacher/enrollments'),
+          api.get('/grades/assignment-types')
+        ]);
+        setEnrollmentOptions(enrollmentsRes.data);
+        setAssignmentTypeOptions(assignmentTypesRes.data);
       } catch (error) {
-        setToastMessage('Could not load student enrollments.');
+        setToastMessage('Could not load form data.');
         setToastType('error');
         setShowToast(true);
       }
     };
 
-    fetchEnrollments();
+    fetchData();
   }, []);
 
   const validationSchema = Yup.object({
@@ -45,15 +50,6 @@ const SubmitGrade = () => {
       .max(new Date(), 'Assignment date cannot be in the future')
   })
 
-
-  const assignmentTypeOptions = [
-    { value: 'homework', label: 'Homework' },
-    { value: 'quiz', label: 'Quiz' },
-    { value: 'exam', label: 'Exam' },
-    { value: 'project', label: 'Project' },
-    { value: 'participation', label: 'Participation' },
-    { value: 'lab', label: 'Laboratory' }
-  ]
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     const payload = {
