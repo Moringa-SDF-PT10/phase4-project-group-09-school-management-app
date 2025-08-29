@@ -6,6 +6,32 @@ from app.utils import role_required
 
 enrollments_bp = Blueprint('enrollments', __name__)
 
+@enrollments_bp.route('/teacher/enrollments/', methods=['GET'])
+@enrollments_bp.route('/teacher/enrollments', methods=['GET'])
+@jwt_required()
+@role_required('teacher')
+def get_teacher_enrollments():
+
+    teacher_id = get_jwt_identity()
+
+    # Get all classes taught by this teacher
+    teacher_classes = Class.query.filter_by(teacher_id=teacher_id).all()
+    class_ids = [c.id for c in teacher_classes]
+
+    # Get all enrollments for those classes
+    enrollments = Enrollment.query.filter(Enrollment.class_id.in_(class_ids)).all()
+
+    enrollment_list = []
+    for enrollment in enrollments:
+        student = enrollment.student
+        class_ = enrollment.class_
+        enrollment_list.append({
+            'value': enrollment.id,
+            'label': f"{student.first_name} {student.last_name} - {class_.name}"
+        })
+    
+    return jsonify(enrollment_list), 200
+
 @enrollments_bp.route('/enroll/<int:class_id>', methods=['POST'])
 @jwt_required()
 @role_required('student')

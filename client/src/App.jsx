@@ -41,12 +41,12 @@ function App() {
                 <EditClass />
               </PrivateRoute>
             } />
-            <Route path="/enroll" element={
+            <Route path="/enroll-student" element={
               <PrivateRoute>
                 <EnrollStudent />
               </PrivateRoute>
             } />
-            <Route path="/grade" element={
+            <Route path="/submit-grade" element={
               <PrivateRoute>
                 <SubmitGrade />
               </PrivateRoute>

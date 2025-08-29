@@ -6,7 +6,8 @@ from ..utils import role_required
 
 classes_bp = Blueprint("classes", __name__)
 
-@classes_bp.get("/", strict_slashes=False)
+@classes_bp.get("/")
+@classes_bp.get("")
 @jwt_required()
 def list_classes():
     classes = Class.query.all()

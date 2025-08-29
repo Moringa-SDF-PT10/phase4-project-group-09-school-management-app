@@ -15,7 +15,8 @@ def me():
     return user.to_dict(), 200
 
 #  Admin: List all users
-@users_bp.get("/", strict_slashes=False)
+@users_bp.get("/")
+@users_bp.get("")
 @role_required("admin")
 def list_users():
     users = User.query.all()
