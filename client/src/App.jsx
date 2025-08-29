@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -13,42 +13,40 @@ import "./App.css";
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <div className="App">
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={
-              <PrivateRoute>
-                <Dashboard />
-              </PrivateRoute>
-            } />
-            <Route path="/class/add" element={
-              <PrivateRoute>
-                <AddClass />
-              </PrivateRoute>
-            } />
-            <Route path="/class/edit/:id" element={
-              <PrivateRoute>
-                <EditClass />
-              </PrivateRoute>
-            } />
-            <Route path="/enroll" element={
-              <PrivateRoute>
-                <EnrollStudent />
-              </PrivateRoute>
-            } />
-            <Route path="/grade" element={
-              <PrivateRoute>
-                <SubmitGrade />
-              </PrivateRoute>
-            } />
-            <Route path="/" element={<Navigate to="/login" replace />} />
-          </Routes>
-        </div>
-      </AuthProvider>
-    </Router>
+    <AuthProvider>
+      <div className="App">
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/dashboard" element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          } />
+          <Route path="/class/add" element={
+            <PrivateRoute>
+              <AddClass />
+            </PrivateRoute>
+          } />
+          <Route path="/class/edit/:id" element={
+            <PrivateRoute>
+              <EditClass />
+            </PrivateRoute>
+          } />
+          <Route path="/enroll" element={
+            <PrivateRoute>
+              <EnrollStudent />
+            </PrivateRoute>
+          } />
+          <Route path="/grade" element={
+            <PrivateRoute>
+              <SubmitGrade />
+            </PrivateRoute>
+          } />
+          <Route path="/" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </div>
+    </AuthProvider>
   );
 }
 
