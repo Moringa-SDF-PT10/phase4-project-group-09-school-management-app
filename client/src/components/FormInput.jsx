@@ -1,6 +1,6 @@
 import React from 'react';
 import { Field, ErrorMessage } from 'formik';
-import { ExclamationCircleIcon, CheckCircleIcon } from '@heroicons/react/solid';
+import { ExclamationCircleIcon, CheckCircleIcon } from '@heroicons/react/24/solid';
 
 const FormInput = ({ 
   label, 
