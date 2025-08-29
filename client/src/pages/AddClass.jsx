@@ -35,9 +35,8 @@ const AddClass = () => {
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
-        const response = await api.get('/users');
-        const teacherUsers = response.data.users.filter(user => user.role === 'teacher');
-        setTeachers(teacherUsers.map(t => ({ value: t.id, label: t.name })));
+        const response = await api.get('/users/teachers');
+        setTeachers(response.data);
       } catch (error) {
         console.error('Failed to fetch teachers:', error);
         setToastMessage('Could not load teachers list.');
