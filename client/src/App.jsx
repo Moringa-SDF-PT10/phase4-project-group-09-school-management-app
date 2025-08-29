@@ -13,8 +13,8 @@ import "./App.css";
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
+    <Router>
+      <AuthProvider>
         <div className="App">
           <Routes>
             <Route path="/login" element={<Login />} />
@@ -47,8 +47,8 @@ function App() {
             <Route path="/" element={<Navigate to="/login" replace />} />
           </Routes>
         </div>
-      </Router>
-    </AuthProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 
