@@ -18,7 +18,7 @@ const Dashboard = () => {
   })
   const [recentActivity, setRecentActivity] = useState([])
   const [enrolledClasses, setEnrolledClasses] = useState([])
-  const [teachingClasses, setTeachingClasses] = useState([])
+  const [teacherStats, setTeacherStats] = useState({ total_students: 0, student_grades: [] });
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -38,8 +38,8 @@ const Dashboard = () => {
           const res = await api.get('/enrollments/my-classes');
           setEnrolledClasses(res.data);
         } else if (currentUser.role === 'teacher') {
-          const res = await api.get('/classes/my-teaching-classes');
-          setTeachingClasses(res.data.classes);
+          const res = await api.get('/dashboard/teacher-summary');
+          setTeacherStats(res.data);
         }
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
@@ -239,32 +239,36 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Teacher's Classes */}
+        {/* Teacher's Dashboard */}
         {currentUser?.role === 'teacher' && (
           <div className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">My Teaching Classes</h2>
-            {teachingClasses.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {teachingClasses.map(cls => (
-                  <div key={cls.id} className="bg-white rounded-lg shadow p-6 flex flex-col justify-between">
-                    <div>
-                      <h3 className="font-bold text-lg text-gray-900">{cls.name}</h3>
-                      <p className="text-sm text-gray-500 mt-1">Schedule: {cls.schedule || 'TBA'}</p>
-                      <p className="text-sm text-gray-500">Location: {cls.location || 'TBA'}</p>
-                    </div>
-                    <div className="mt-4">
-                      <Link to={`/class/${cls.id}/grades`} className="btn-secondary w-full text-center">
-                        Manage Grades
-                      </Link>
-                    </div>
-                  </div>
-                ))}
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Teacher Overview</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="bg-white rounded-lg shadow p-6">
+                <p className="text-sm font-medium text-gray-600">Total Students</p>
+                <p className="text-3xl font-semibold text-gray-900">{teacherStats.total_students}</p>
               </div>
-            ) : (
-              <div className="bg-white rounded-lg shadow p-6 text-center">
-                <p className="text-gray-600">You are not assigned to any classes yet.</p>
-              </div>
-            )}
+            </div>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Student Average Grades</h3>
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Name</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Average Grade</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {teacherStats.student_grades.map(student => (
+                    <tr key={student.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{student.name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.average_grade}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
