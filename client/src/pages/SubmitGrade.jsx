@@ -1,23 +1,37 @@
-import React, { useState } from 'react';
-import { Formik, Form } from 'formik';
-import * as Yup from 'yup';
-import { useNavigate, Link } from 'react-router-dom';
-import FormInput from '../components/FormInput.jsx';
-import Toast from '../components/Toast.jsx';
-import { 
-  ArrowLeftIcon, 
-  AcademicCapIcon,
-  ChartBarIcon,
-  DocumentTextIcon,
-  CalendarIcon,
-  UserIcon
-} from '@heroicons/react/24/outline';
+import React, { useState, useEffect } from 'react'
+import api from '../services/api.js'
+import { Formik, Form } from 'formik'
+import * as Yup from 'yup'
+import { useNavigate, Link } from 'react-router-dom'
+import FormInput from '../components/FormInput.jsx'
+import Toast from '../components/Toast.jsx'
 
 const SubmitGrade = () => {
-  const navigate = useNavigate();
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
-  const [toastType, setToastType] = useState('success');
+  const navigate = useNavigate()
+  const [showToast, setShowToast] = useState(false)
+  const [toastMessage, setToastMessage] = useState('')
+  const [toastType, setToastType] = useState('success')
+  const [enrollmentOptions, setEnrollmentOptions] = useState([]);
+  const [assignmentTypeOptions, setAssignmentTypeOptions] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [enrollmentsRes, assignmentTypesRes] = await Promise.all([
+          api.get('/enrollments/teacher/enrollments'),
+          api.get('/grades/assignment-types')
+        ]);
+        setEnrollmentOptions(enrollmentsRes.data);
+        setAssignmentTypeOptions(assignmentTypesRes.data);
+      } catch (error) {
+        setToastMessage('Could not load form data.');
+        setToastType('error');
+        setShowToast(true);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const validationSchema = Yup.object({
     enrollment: Yup.string()
@@ -39,35 +53,15 @@ const SubmitGrade = () => {
       .max(500, 'Comments cannot exceed 500 characters')
   });
 
-  const enrollmentOptions = [
-    { value: 'enrollment_001', label: 'Alice Johnson - Mathematics 101 (Fall 2024)' },
-    { value: 'enrollment_002', label: 'Bob Smith - Physics 201 (Fall 2024)' },
-    { value: 'enrollment_003', label: 'Carol Davis - Chemistry 101 (Fall 2024)' },
-    { value: 'enrollment_004', label: 'David Wilson - Biology 201 (Fall 2024)' },
-    { value: 'enrollment_005', label: 'Eva Brown - English 101 (Fall 2024)' },
-    { value: 'enrollment_006', label: 'Frank Miller - History 201 (Fall 2024)' }
-  ];
-
-  const assignmentTypeOptions = [
-    { value: 'homework', label: 'Homework Assignment' },
-    { value: 'quiz', label: 'Quiz' },
-    { value: 'exam', label: 'Exam' },
-    { value: 'midterm', label: 'Midterm Exam' },
-    { value: 'final', label: 'Final Exam' },
-    { value: 'project', label: 'Project' },
-    { value: 'participation', label: 'Class Participation' },
-    { value: 'lab', label: 'Laboratory Work' },
-    { value: 'presentation', label: 'Presentation' }
-  ];
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
+    const payload = {
+        enrollment_id: values.enrollment,
+        score: values.grade,
+        remarks: `${values.assignmentType} - ${values.assignmentName} (${values.assignmentDate})`
+    };
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log('Grade submission data:', values);
-      
-      setToastMessage('Grade submitted successfully!');
-      setToastType('success');
-      setShowToast(true);
+      await api.post('/grades/', payload);
       
       resetForm();
       

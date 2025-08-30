@@ -117,91 +117,36 @@ const Login = () => {
                       Remember me
                     </label>
                   </div>
-
-                  <Link
-                    to="/forgot-password"
-                    className="text-sm text-blue-600 hover:text-blue-500 transition-colors"
-                  >
-                    Forgot password?
-                  </Link>
+                  <div className="text-sm">
+                    <Link to="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
+                      Forgot your password?
+                    </Link>
+                  </div>
                 </div>
 
-                {errors.submit && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <p className="text-red-700 text-sm font-medium">
-                      {errors.submit}
-                    </p>
-                  </div>
-                )}
-
+                {/* Submit button */}
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="btn-primary w-full flex items-center justify-center py-3 px-4 text-base font-medium"
+                  className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
-                  {isSubmitting ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Signing in...
-                    </div>
-                  ) : (
-                    <>
-                      Sign in
-                      <ArrowRightIcon className="ml-2 h-4 w-4" />
-                    </>
-                  )}
+                  {isSubmitting ? 'Signing in...' : 'Sign In'}
+                  <ArrowRightIcon className="ml-2 h-5 w-5" />
                 </button>
-
-                <div className="text-center pt-4 border-t border-gray-200 mt-6">
-                  <p className="text-sm text-gray-600">
-                    Don't have an account?{' '}
-                    <Link
-                      to="/register"
-                      className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
-                    >
-                      Create account
-                    </Link>
-                  </p>
-                </div>
               </Form>
             )}
           </Formik>
         </div>
 
-        <div className="mt-6 bg-blue-50 rounded-xl p-4 border border-blue-200">
-          <h3 className="text-sm font-semibold text-blue-900 mb-2 flex items-center">
-            <AcademicCapIcon className="h-4 w-4 mr-1" />
-            Demo Accounts
-          </h3>
-          <p className="text-sm text-blue-700">
-            <strong>Admin:</strong> admin@school.edu / admin123<br />
-            <strong>Teacher:</strong> teacher@school.edu / teacher123<br />
-            <strong>Student:</strong> student@school.edu / student123
-          </p>
-        </div>
-
-        <div className="mt-4 text-center">
-          <p className="text-xs text-gray-500">
-            By signing in, you agree to our{' '}
-            <Link to="/terms" className="text-blue-600 hover:text-blue-700">
-              Terms of Service
-            </Link>{' '}
-            and{' '}
-            <Link to="/privacy" className="text-blue-600 hover:text-blue-700">
-              Privacy Policy
-            </Link>
-          </p>
-        </div>
+        {showToast && (
+          <Toast
+            message={toastMessage}
+            type={toastType}
+            onClose={() => setShowToast(false)}
+            duration={3000}
+          />
+        )}
       </div>
-
-      {showToast && (
-        <Toast
-          message={toastMessage}
-          type={toastType}
-          onClose={() => setShowToast(false)}
-          duration={3000}
-        />
-      )}
     </div>
   );
 };

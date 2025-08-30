@@ -61,12 +61,20 @@ class EnrollmentStatus(str, Enum):
     dropped = "dropped"
     pending = "pending"
 
+class Semester(str, Enum):
+    first_semester = "first_semester"
+    second_semester = "second_semester"
+    tri_semester = "tri_semester"
+
 class Enrollment(db.Model):
     __tablename__ = "enrollments"
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     class_id = db.Column(db.Integer, db.ForeignKey("classes.id"), nullable=False)
     status = db.Column(db.Enum(EnrollmentStatus), default=EnrollmentStatus.active, nullable=False)
+    enrollment_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    semester = db.Column(db.Enum(Semester), nullable=False)
+    academic_year = db.Column(db.String(20), nullable=False)
 
     student = db.relationship("User")
     class_ = db.relationship("Class", back_populates="enrollments")
@@ -78,6 +86,9 @@ class Enrollment(db.Model):
             "status": self.status.value,
             "student": self.student.to_dict() if self.student else None,
             "class_id": self.class_id,
+            "enrollment_date": self.enrollment_date.isoformat(),
+            "semester": self.semester.value,
+            "academic_year": self.academic_year,
         }
         if include_grades:
             data["grades"] = [g.to_dict() for g in self.grades]

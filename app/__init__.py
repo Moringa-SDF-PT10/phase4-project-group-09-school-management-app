@@ -4,6 +4,10 @@ from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from config import Config
+import logging
+
+# Set up basic logging
+logging.basicConfig(level=logging.DEBUG)
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -12,8 +16,6 @@ jwt = JWTManager()
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
-
-    CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
     db.init_app(app)
     migrate.init_app(app, db)
@@ -28,12 +30,17 @@ def create_app():
     from .routes.classes import classes_bp
     from .routes.enrollments import enrollments_bp
     from .routes.grades import grades_bp
+    from .routes.dashboard import dashboard_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(users_bp, url_prefix="/api/users")
     app.register_blueprint(classes_bp, url_prefix="/api/classes")
     app.register_blueprint(enrollments_bp, url_prefix="/api/enrollments")
     app.register_blueprint(grades_bp, url_prefix="/api/grades")
+    app.register_blueprint(dashboard_bp, url_prefix="/api/dashboard")
+
+    # Initialize CORS after blueprints are registered
+    CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True, automatic_options=True)
 
     @app.get("/api/health")
     def health():

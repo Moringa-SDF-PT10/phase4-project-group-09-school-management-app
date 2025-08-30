@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 
 const AuthContext = createContext();
 
@@ -49,45 +50,20 @@ export const AuthProvider = ({ children }) => {
     try {
       setError(null);
       setLoading(true);
-      
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await api.post("/auth/login", { email, password });
+      const { data } = response;
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || `Login failed (${response.status})`);
+      if (data.access_token && data.user) {
+        localStorage.setItem("token", data.access_token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        setCurrentUser(data.user);
+        setSuccess("Login successful!");
+        return data;
+      } else {
+        throw new Error("Login failed: Invalid response from server.");
       }
-
-      const data = await response.json();
-
-      if (!data.token || !data.user) {
-        throw new Error("Invalid response from server");
-      }
-
-      localStorage.setItem("auth_token", data.token);
-      localStorage.setItem("auth_user", JSON.stringify(data.user));
-      setCurrentUser(data.user);
-      setAuthToken(data.token);
-      
-      setSuccess("Login successful! Redirecting...");
-      
-      setTimeout(() => {
-        const redirectPath = data.user.role === 'admin' ? '/admin' : 
-                           data.user.role === 'teacher' ? '/teacher' : '/student';
-        navigate(redirectPath);
-      }, 1000);
-      
-      return data;
     } catch (err) {
-      const errorMessage = err.name === 'TypeError' && err.message.includes('fetch')
-        ? "Unable to connect to server. Please check your connection."
-        : err.message;
-      
+      const errorMessage = err.response?.data?.msg || err.message || "An unknown error occurred.";
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -99,40 +75,11 @@ export const AuthProvider = ({ children }) => {
     try {
       setError(null);
       setLoading(true);
-      
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(userData),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || `Registration failed (${response.status})`);
-      }
-
-      const data = await response.json();
-
+      const response = await api.post("/auth/register", userData);
       setSuccess("Registration successful! Please log in.");
-      
-      if (data.token && data.user) {
-        localStorage.setItem("auth_token", data.token);
-        localStorage.setItem("auth_user", JSON.stringify(data.user));
-        setCurrentUser(data.user);
-        setAuthToken(data.token);
-        
-        setSuccess("Registration successful! Redirecting...");
-        setTimeout(() => navigate('/dashboard'), 1000);
-      }
-      
-      return data;
+      return response.data;
     } catch (err) {
-      const errorMessage = err.name === 'TypeError' && err.message.includes('fetch')
-        ? "Unable to connect to server. Please check your connection."
-        : err.message;
-      
+      const errorMessage = err.response?.data?.msg || err.message || "An unknown error occurred.";
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -186,41 +133,4 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuthApi = () => {
-  const { currentUser } = useAuth();
-
-  const authFetch = async (url, options = {}) => {
-    const token = localStorage.getItem("auth_token");
-    
-    const headers = {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    };
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(url, {
-      ...options,
-      headers,
-    });
-
-    if (response.status === 401) {
-      localStorage.removeItem("auth_token");
-      localStorage.removeItem("auth_user");
-      window.location.href = '/login';
-      throw new Error("Authentication expired. Please log in again.");
-    }
-
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-
-    return response.json();
-  };
-
-  return { authFetch };
 };

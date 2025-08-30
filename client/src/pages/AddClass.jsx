@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
-import { Formik, Form } from 'formik';
-import * as Yup from 'yup';
-import { useNavigate, Link } from 'react-router-dom';
-import FormInput from '../components/FormInput.jsx';
-import Toast from '../components/Toast.jsx';
-import { ArrowLeftIcon, AcademicCapIcon } from '@heroicons/react/24/outline';
+import React, { useState, useEffect } from 'react'
+import api from '../services/api'
+import { Formik, Form } from 'formik'
+import * as Yup from 'yup'
+import { useNavigate, Link } from 'react-router-dom'
+import FormInput from '../components/FormInput.jsx'
+import Toast from '../components/Toast.jsx'
 
 const AddClass = () => {
-  const navigate = useNavigate();
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
-  const [toastType, setToastType] = useState('success');
+  const navigate = useNavigate()
+  const [showToast, setShowToast] = useState(false)
+  const [toastMessage, setToastMessage] = useState('')
+  const [toastType, setToastType] = useState('success')
+  const [teachers, setTeachers] = useState([])
 
   const validationSchema = Yup.object({
     name: Yup.string()
@@ -21,44 +22,38 @@ const AddClass = () => {
       .min(10, 'Description must be at least 10 characters')
       .max(500, 'Description cannot exceed 500 characters')
       .required('Description is required'),
-    capacity: Yup.number()
-      .min(1, 'Capacity must be at least 1')
-      .max(100, 'Capacity cannot exceed 100')
-      .required('Capacity is required'),
-    schedule: Yup.string()
-      .required('Schedule is required'),
-    location: Yup.string()
-      .required('Location is required'),
-    teacher: Yup.string()
+    teacher_id: Yup.number()
       .required('Teacher is required')
   });
 
-  const teacherOptions = [
-    { value: 'john_doe', label: 'John Doe - Mathematics' },
-    { value: 'jane_smith', label: 'Jane Smith - Physics' },
-    { value: 'mike_johnson', label: 'Mike Johnson - Chemistry' },
-    { value: 'sarah_wilson', label: 'Sarah Wilson - Biology' },
-    { value: 'david_brown', label: 'David Brown - English' }
-  ];
+  useEffect(() => {
+    const fetchTeachers = async () => {
+      try {
+        const response = await api.get('/users/teachers');
+        setTeachers(response.data);
+      } catch (error) {
+        console.error('Failed to fetch teachers:', error);
+        setToastMessage('Could not load teachers list.');
+        setToastType('error');
+        setShowToast(true);
+      }
+    };
+    fetchTeachers();
+  }, []);
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
-
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      console.log('New class data:', values);
-      
+      await api.post('/classes', values);
       setToastMessage('Class created successfully!');
       setToastType('success');
       setShowToast(true);
-      
       resetForm();
-      
       setTimeout(() => {
         navigate('/classes');
       }, 1500);
     } catch (error) {
-      setToastMessage('Failed to create class. Please try again.');
+      console.error('Failed to create class:', error);
+      setToastMessage(error.response?.data?.msg || 'Failed to create class.');
       setToastType('error');
       setShowToast(true);
     } finally {
@@ -91,6 +86,12 @@ const AddClass = () => {
               <h1 className="text-3xl font-bold text-gray-900">Create New Class</h1>
               <p className="text-gray-600 mt-2">Add a new class to the system with all necessary details</p>
             </div>
+            <Link
+              to="/classes"
+              className="btn-secondary"
+            >
+              ← Back to Dashboard
+            </Link>
           </div>
         </div>
 
@@ -99,75 +100,39 @@ const AddClass = () => {
             initialValues={{
               name: '',
               description: '',
-              capacity: '',
-              schedule: '',
-              location: '',
-              teacher: ''
+              teacher_id: ''
             }}
             validationSchema={validationSchema}
             onSubmit={handleSubmit}
           >
             {({ isSubmitting, dirty, isValid }) => (
               <Form className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormInput
-                    label="Class Name"
-                    name="name"
-                    placeholder="e.g., Advanced Mathematics 101"
-                    required
-                    helperText="Enter a descriptive name for the class"
-                  />
-                  
-                  <FormInput
-                    label="Teacher"
-                    name="teacher"
-                    type="select"
-                    options={teacherOptions}
-                    required
-                    helperText="Select the assigned teacher"
-                  />
-                </div>
+                <FormInput
+                  label="Class Name"
+                  name="name"
+                  placeholder="e.g., Advanced Mathematics 101"
+                  required
+                />
                 
                 <FormInput
                   label="Description"
                   name="description"
-                  type="textarea"
-                  placeholder="Brief description of the class content, objectives, and requirements..."
+                  placeholder="Brief description of the class content and objectives"
                   required
-                  helperText="Provide detailed information about the class"
                 />
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <FormInput
-                    label="Capacity"
-                    name="capacity"
-                    type="number"
-                    placeholder="30"
-                    required
-                    helperText="Maximum number of students"
-                  />
-                  
-                  <FormInput
-                    label="Schedule"
-                    name="schedule"
-                    placeholder="e.g., Mon/Wed/Fri 9:00 AM - 10:30 AM"
-                    required
-                    helperText="Class meeting times"
-                  />
-                  
-                  <FormInput
-                    label="Location"
-                    name="location"
-                    placeholder="e.g., Room 201, Building A"
-                    required
-                    helperText="Classroom or building location"
-                  />
-                </div>
+                <FormInput
+                  label="Teacher"
+                  name="teacher_id"
+                  type="select"
+                  options={teachers}
+                  required
+                />
 
                 <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-4 pt-6 border-t border-gray-200">
                   <Link
                     to="/classes"
-                    className="btn-secondary mt-3 sm:mt-0 w-full sm:w-auto justify-center"
+                    className="btn-secondary flex-1 text-center"
                   >
                     Cancel
                   </Link>
