@@ -78,3 +78,41 @@ def teacher_dashboard_summary():
         "total_students": total_students,
         "student_grades": sorted(student_grades, key=lambda x: x['name'])
     })
+
+@dashboard_bp.get("/student-summary")
+@jwt_required()
+@role_required("student")
+def student_dashboard_summary():
+    student_id = get_jwt_identity()
+
+    # Get all enrollments for the student
+    enrollments = Enrollment.query.filter_by(student_id=student_id).all()
+    if not enrollments:
+        return jsonify({"total_classes": 0, "overall_average_grade": 0, "class_grades": []})
+
+    total_classes = len(enrollments)
+    enrollment_ids = [e.id for e in enrollments]
+
+    # Calculate overall average grade
+    overall_avg_grade = db.session.query(func.avg(Grade.score)).filter(
+        Grade.enrollment_id.in_(enrollment_ids)
+    ).scalar()
+
+    class_grades = []
+    for enrollment in enrollments:
+        # Get average grade for each class enrollment
+        avg_grade = db.session.query(func.avg(Grade.score)).filter(
+            Grade.enrollment_id == enrollment.id
+        ).scalar()
+
+        class_grades.append({
+            'class_id': enrollment.class_id,
+            'class_name': enrollment.class_.name,
+            'average_grade': round(avg_grade, 2) if avg_grade else 'N/A'
+        })
+
+    return jsonify({
+        "total_classes": total_classes,
+        "overall_average_grade": round(overall_avg_grade, 2) if overall_avg_grade else 0,
+        "class_grades": sorted(class_grades, key=lambda x: x['class_name'])
+    })

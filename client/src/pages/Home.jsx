@@ -3,14 +3,16 @@ import { Link } from 'react-router-dom';
 
 const Home = () => {
   return (
-    <div className="text-center">
-      <h1 className="text-4xl font-bold mb-4">Welcome to the School Management App</h1>
-      <p className="text-lg mb-8">Please log in or register to continue.</p>
-      <div className="space-x-4">
-        <Link to="/login" className="btn-primary">Login</Link>
-        <Link to="/register" className="btn-secondary">Register</Link>
+    <main className="bg-gray-50 flex-grow">
+      <div className="max-w-7xl mx-auto py-20 px-4 sm:px-6 lg:px-8 text-center">
+        <h1 className="text-5xl font-extrabold text-gray-900">
+          Empowering Education, Together
+        </h1>
+        <p className="mt-4 text-lg text-gray-600">
+          The all-in-one platform for students, teachers, and administrators.
+        </p>
       </div>
-    </div>
+    </main>
   );
 };
 
