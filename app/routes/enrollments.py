@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from sqlalchemy.orm import joinedload
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from app import db
 from app.models import Enrollment, Class, User, Role, EnrollmentStatus
@@ -19,17 +20,28 @@ def get_teacher_enrollments():
     teacher_classes = Class.query.filter_by(teacher_id=teacher_id).all()
     class_ids = [c.id for c in teacher_classes]
 
+    if not class_ids:
+        return jsonify([]), 200
+
     # Get all enrollments for those classes
-    enrollments = Enrollment.query.filter(Enrollment.class_id.in_(class_ids)).all()
+    enrollments = (
+        Enrollment.query.options(
+            joinedload(Enrollment.student), 
+            joinedload(Enrollment.class_)
+        )
+        .filter(Enrollment.class_id.in_(class_ids))
+        .all()
+    )
 
     enrollment_list = []
     for enrollment in enrollments:
         student = enrollment.student
         class_ = enrollment.class_
-        enrollment_list.append({
-            'value': enrollment.id,
-            'label': f"{student.first_name} {student.last_name} - {class_.name}"
-        })
+        if student and class_:
+            enrollment_list.append({
+                'value': enrollment.id,
+                'label': f"{student.name} - {class_.name}"
+            })
     
     return jsonify(enrollment_list), 200
 
@@ -42,8 +54,10 @@ def create_enrollment():
     student_id = data.get('student_id')
     class_id = data.get('class_id')
     enrollment_date_str = data.get('enrollment_date')
+    semester = data.get('semester')
+    academic_year = data.get('academic_year')
 
-    if not all([student_id, class_id, enrollment_date_str]):
+    if not all([student_id, class_id, enrollment_date_str, semester, academic_year]):
         return jsonify({'msg': 'Missing required fields'}), 400
 
     # Validate student and class
@@ -58,12 +72,9 @@ def create_enrollment():
     if existing_enrollment:
         return jsonify({'msg': 'Student is already enrolled in this class'}), 409
 
-    # Check class capacity
-    if class_to_enroll.capacity is not None and len(class_to_enroll.enrollments) >= class_to_enroll.capacity:
-        return jsonify({'msg': 'Class is at full capacity'}), 409
 
     try:
-        enrollment_date = datetime.fromisoformat(enrollment_date_str.replace('Z', '+00:00')).date()
+        enrollment_date = datetime.fromisoformat(enrollment_date_str.replace('Z', '+00:00'))
     except ValueError:
         return jsonify({'msg': 'Invalid date format for enrollment_date'}), 400
 
@@ -71,6 +82,8 @@ def create_enrollment():
         student_id=student_id,
         class_id=class_id,
         enrollment_date=enrollment_date,
+        semester=semester,
+        academic_year=academic_year,
         status=EnrollmentStatus.active
     )
     db.session.add(new_enrollment)
@@ -86,8 +99,6 @@ def enroll_in_class(class_id):
     student_id = get_jwt_identity()
     class_to_enroll = Class.query.get_or_404(class_id)
 
-    if len(class_to_enroll.enrollments) >= class_to_enroll.capacity:
-        return jsonify({'msg': 'Class is full'}), 400
 
     existing_enrollment = Enrollment.query.filter_by(student_id=student_id, class_id=class_id).first()
     if existing_enrollment:

@@ -19,7 +19,15 @@ def me():
 @users_bp.get("")
 @role_required("admin")
 def list_users():
-    users = User.query.all()
+    role = request.args.get("role")
+    query = User.query
+    if role:
+        try:
+            role_enum = Role(role)
+            query = query.filter_by(role=role_enum)
+        except ValueError:
+            return {"msg": f"Invalid role: {role}"}, 400
+    users = query.all()
     return {"users": [u.to_dict() for u in users]}, 200
 
 
@@ -32,6 +40,17 @@ def list_students():
         for student in students
     ]
     return jsonify(student_options), 200
+
+
+@users_bp.get("/teachers")
+@role_required("admin")
+def list_teachers():
+    teachers = User.query.filter_by(role=Role.teacher).all()
+    teacher_options = [
+        {"value": teacher.id, "label": teacher.name}
+        for teacher in teachers
+    ]
+    return jsonify(teacher_options), 200
 
 # Admin: Create a new Student or Teacher
 @users_bp.post("/")

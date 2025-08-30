@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import api from '../services/api';
 import Toast from '../components/Toast.jsx';
 
 const UserManagement = () => {
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const roleFilter = params.get('role');
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showToast, setShowToast] = useState(false);
@@ -12,8 +15,10 @@ const UserManagement = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
 
   const fetchUsers = async () => {
+    setLoading(true);
     try {
-      const res = await api.get('/users/');
+      const endpoint = roleFilter ? `/users?role=${roleFilter}` : '/users';
+      const res = await api.get(endpoint);
       setUsers(res.data.users);
     } catch (error) {
       setToastMessage('Failed to load users.');
@@ -26,7 +31,7 @@ const UserManagement = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [roleFilter]);
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -89,7 +94,7 @@ const CreateUserForm = ({ onUserCreated }) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await api.post('/users/', formData);
+      const res = await api.post('/users', formData);
       setToastMessage(res.data.msg);
       setToastType('success');
       setShowToast(true);

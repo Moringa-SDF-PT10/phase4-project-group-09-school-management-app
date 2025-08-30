@@ -20,14 +20,6 @@ const AddClass = () => {
     description: Yup.string()
       .min(10, 'Description must be at least 10 characters')
       .required('Description is required'),
-    capacity: Yup.number()
-      .min(1, 'Capacity must be at least 1')
-      .max(100, 'Capacity cannot exceed 100')
-      .required('Capacity is required'),
-    schedule: Yup.string()
-      .required('Schedule is required'),
-    location: Yup.string()
-      .required('Location is required'),
     teacher_id: Yup.number()
       .required('Teacher is required')
   })
@@ -92,9 +84,6 @@ const AddClass = () => {
             initialValues={{
               name: '',
               description: '',
-              capacity: '',
-              schedule: '',
-              location: '',
               teacher_id: ''
             }}
             validationSchema={validationSchema}
@@ -116,39 +105,13 @@ const AddClass = () => {
                   required
                 />
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormInput
-                    label="Capacity"
-                    name="capacity"
-                    type="number"
-                    placeholder="Maximum number of students"
-                    required
-                  />
-                  
-                  <FormInput
-                    label="Schedule"
-                    name="schedule"
-                    placeholder="e.g., Mon/Wed/Fri 9:00 AM - 10:30 AM"
-                    required
-                  />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormInput
-                    label="Location"
-                    name="location"
-                    placeholder="e.g., Room 201, Building A"
-                    required
-                  />
-                  
-                  <FormInput
-                    label="Teacher"
-                    name="teacher_id"
-                    type="select"
-                    options={teachers}
-                    required
-                  />
-                </div>
+                <FormInput
+                  label="Teacher"
+                  name="teacher_id"
+                  type="select"
+                  options={teachers}
+                  required
+                />
 
                 <div className="flex space-x-4 pt-4">
                   <button

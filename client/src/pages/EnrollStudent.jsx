@@ -48,9 +48,9 @@ const EnrollStudent = () => {
   }, []);
 
   const semesterOptions = [
-    { value: 'fall', label: 'Fall' },
-    { value: 'spring', label: 'Spring' },
-    { value: 'summer', label: 'Summer' }
+    { value: 'first_semester', label: 'First Semester' },
+    { value: 'second_semester', label: 'Second Semester' },
+    { value: 'tri_semester', label: 'Tri Semester' }
   ]
 
   const academicYearOptions = [
@@ -63,7 +63,9 @@ const EnrollStudent = () => {
     const payload = {
       student_id: values.student,
       class_id: values.class,
-      enrollment_date: values.enrollmentDate
+      enrollment_date: values.enrollmentDate,
+      semester: values.semester,
+      academic_year: values.academicYear
     };
 
     try {

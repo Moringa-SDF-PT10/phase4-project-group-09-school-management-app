@@ -111,7 +111,7 @@ const ClassList = () => {
                         {c.teacher ? c.teacher.name : 'Not Assigned'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                        <Link to={`/edit-class/${c.id}`} className="text-indigo-600 hover:text-indigo-900">
+                        <Link to={`/class/edit/${c.id}`} className="text-indigo-600 hover:text-indigo-900">
                           Edit
                         </Link>
                         <button onClick={() => handleDelete(c.id)} className="text-red-600 hover:text-red-900">

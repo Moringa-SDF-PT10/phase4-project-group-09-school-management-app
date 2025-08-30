@@ -56,12 +56,6 @@ const MyTeachingClasses = () => {
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Class Name
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Schedule
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Enrolled Students
-                  </th>
                   <th scope="col" className="relative px-6 py-3">
                     <span className="sr-only">Actions</span>
                   </th>
@@ -71,8 +65,6 @@ const MyTeachingClasses = () => {
                 {teachingClasses.map((cls) => (
                   <tr key={cls.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{cls.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{cls.schedule}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{cls.enrollments.length} / {cls.capacity}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <Link to={`/class/${cls.id}/grades`} className="btn-primary">
                         Manage Grades

@@ -21,20 +21,17 @@ def create_class():
     if not name:
         return {"msg": "name is required"}, 400
 
-    new_class = Class(
-        name=name,
-        description=data.get("description", ""),
-        capacity=data.get("capacity"),
-        schedule=data.get("schedule"),
-        location=data.get("location")
-    )
-
     teacher_id = data.get("teacher_id")
     if teacher_id:
         teacher = User.query.get(teacher_id)
         if not teacher or teacher.role != Role.teacher:
             return {"msg": "Invalid teacher ID"}, 400
-        new_class.teacher = teacher
+
+    new_class = Class(
+        name=name,
+        description=data.get("description", ""),
+        teacher_id=teacher_id
+    )
 
     db.session.add(new_class)
     db.session.commit()
@@ -47,9 +44,6 @@ def update_class(class_id):
     data = request.get_json() or {}
     c.name = data.get("name", c.name)
     c.description = data.get("description", c.description)
-    c.capacity = data.get("capacity", c.capacity)
-    c.schedule = data.get("schedule", c.schedule)
-    c.location = data.get("location", c.location)
     
     teacher_id = data.get("teacher_id")
     if teacher_id:
