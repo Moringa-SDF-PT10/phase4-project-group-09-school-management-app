@@ -17,7 +17,7 @@ const Dashboard = () => {
     averageGrade: 0
   })
   const [recentActivity, setRecentActivity] = useState([])
-  const [enrolledClasses, setEnrolledClasses] = useState([])
+  const [studentStats, setStudentStats] = useState({ total_classes: 0, overall_average_grade: 0, class_grades: [] });
   const [teacherStats, setTeacherStats] = useState({ total_students: 0, student_grades: [] });
   const [loading, setLoading] = useState(true)
 
@@ -35,8 +35,8 @@ const Dashboard = () => {
           });
           setRecentActivity(response.data.recent_activity);
         } else if (currentUser.role === 'student') {
-          const res = await api.get('/enrollments/my-classes');
-          setEnrolledClasses(res.data);
+          const res = await api.get('/dashboard/student-summary');
+          setStudentStats(res.data);
         } else if (currentUser.role === 'teacher') {
           const res = await api.get('/dashboard/teacher-summary');
           setTeacherStats(res.data);
@@ -188,56 +188,58 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Link to="/classes" className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-blue-100 text-blue-600">
-                <span className="text-2xl">📚</span>
+        {/* Stats Overview (Admin Only) */}
+        {currentUser?.role === 'admin' && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <Link to="/classes" className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+              <div className="flex items-center">
+                <div className="p-3 rounded-full bg-blue-100 text-blue-600">
+                  <span className="text-2xl">📚</span>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Classes</p>
+                  <p className="text-2xl font-semibold text-gray-900">{stats.totalClasses}</p>
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Classes</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.totalClasses}</p>
+            </Link>
+            
+            <Link to="/user-management?role=student" className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+              <div className="flex items-center">
+                <div className="p-3 rounded-full bg-green-100 text-green-600">
+                  <span className="text-2xl">👨‍🎓</span>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Students</p>
+                  <p className="text-2xl font-semibold text-gray-900">{stats.totalStudents}</p>
+                </div>
               </div>
-            </div>
-          </Link>
-          
-          <Link to="/user-management?role=student" className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-green-100 text-green-600">
-                <span className="text-2xl">👨‍🎓</span>
+            </Link>
+            
+            <Link to="/user-management?role=teacher" className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+              <div className="flex items-center">
+                <div className="p-3 rounded-full bg-purple-100 text-purple-600">
+                  <span className="text-2xl">👨‍🏫</span>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Teachers</p>
+                  <p className="text-2xl font-semibold text-gray-900">{stats.totalTeachers}</p>
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Students</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.totalStudents}</p>
-              </div>
-            </div>
-          </Link>
-          
-          <Link to="/user-management?role=teacher" className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-purple-100 text-purple-600">
-                <span className="text-2xl">👨‍🏫</span>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Teachers</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.totalTeachers}</p>
-              </div>
-            </div>
-          </Link>
-          
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-orange-100 text-orange-600">
-                <span className="text-2xl">📊</span>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Avg. Grade</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.averageGrade}%</p>
+            </Link>
+            
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center">
+                <div className="p-3 rounded-full bg-orange-100 text-orange-600">
+                  <span className="text-2xl">📊</span>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Avg. Grade</p>
+                  <p className="text-2xl font-semibold text-gray-900">{stats.averageGrade}%</p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Teacher's Dashboard */}
         {currentUser?.role === 'teacher' && (
@@ -272,31 +274,40 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Student's Enrolled Classes */}
+        {/* Student's Dashboard */}
         {currentUser?.role === 'student' && (
           <div className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">My Enrolled Classes</h2>
-            {enrolledClasses.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {enrolledClasses.map(enrollment => (
-                  <div key={enrollment.enrollment_id} className="bg-white rounded-lg shadow p-6">
-                    <h3 className="font-bold text-lg text-gray-900">{enrollment.class.name}</h3>
-                    <p className="text-sm text-gray-600 mt-1">Taught by: {enrollment.class.teacher?.name || 'N/A'}</p>
-                    <p className="text-sm text-gray-500 mt-1">Schedule: {enrollment.class.schedule || 'TBA'}</p>
-                    <p className={`mt-2 text-sm font-semibold ${enrollment.status === 'active' ? 'text-green-600' : 'text-yellow-600'}`}>
-                      Status: {enrollment.status}
-                    </p>
-                  </div>
-                ))}
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Student Overview</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="bg-white rounded-lg shadow p-6">
+                <p className="text-sm font-medium text-gray-600">Total Enrolled Classes</p>
+                <p className="text-3xl font-semibold text-gray-900">{studentStats.total_classes}</p>
               </div>
-            ) : (
-              <div className="bg-white rounded-lg shadow p-6 text-center">
-                <p className="text-gray-600">You are not enrolled in any classes yet.</p>
-                <Link to="/browse-classes" className="btn-primary mt-4 inline-block">
-                  Browse Classes
-                </Link>
+              <div className="bg-white rounded-lg shadow p-6">
+                <p className="text-sm font-medium text-gray-600">Overall Average Grade</p>
+                <p className="text-3xl font-semibold text-gray-900">{studentStats.overall_average_grade}%</p>
               </div>
-            )}
+            </div>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-4">My Grades</h3>
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Class Name</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Average Grade</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {studentStats.class_grades.map(grade => (
+                    <tr key={grade.class_id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{grade.class_name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{grade.average_grade === 'N/A' ? 'N/A' : `${grade.average_grade}%`}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
