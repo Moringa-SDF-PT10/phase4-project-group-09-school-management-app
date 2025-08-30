@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import api from '../services/api'
 import { Formik, Form } from 'formik'
 import * as Yup from 'yup'
 import { useNavigate, Link } from 'react-router-dom'
@@ -10,6 +11,8 @@ const EnrollStudent = () => {
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
   const [toastType, setToastType] = useState('success')
+  const [studentOptions, setStudentOptions] = useState([])
+  const [classOptions, setClassOptions] = useState([])
 
   const validationSchema = Yup.object({
     student: Yup.string()
@@ -25,30 +28,29 @@ const EnrollStudent = () => {
       .required('Academic year is required')
   })
 
-  const studentOptions = [
-    { value: 'student_001', label: 'Alice Johnson - ID: 001' },
-    { value: 'student_002', label: 'Bob Smith - ID: 002' },
-    { value: 'student_003', label: 'Carol Davis - ID: 003' },
-    { value: 'student_004', label: 'David Wilson - ID: 004' },
-    { value: 'student_005', label: 'Eva Brown - ID: 005' },
-    { value: 'student_006', label: 'Frank Miller - ID: 006' },
-    { value: 'student_007', label: 'Grace Taylor - ID: 007' },
-    { value: 'student_008', label: 'Henry Anderson - ID: 008' }
-  ]
 
-  const classOptions = [
-    { value: 'math_101', label: 'Mathematics 101 - Advanced Calculus' },
-    { value: 'physics_201', label: 'Physics 201 - Classical Mechanics' },
-    { value: 'chemistry_101', label: 'Chemistry 101 - General Chemistry' },
-    { value: 'biology_201', label: 'Biology 201 - Cell Biology' },
-    { value: 'english_101', label: 'English 101 - Composition' },
-    { value: 'history_201', label: 'History 201 - World History' }
-  ]
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        const [studentsRes, classesRes] = await Promise.all([
+          api.get('/users/students'),
+          api.get('/classes/options')
+        ]);
+        setStudentOptions(studentsRes.data);
+        setClassOptions(classesRes.data);
+      } catch (error) {
+        setToastMessage('Failed to load form options.');
+        setToastType('error');
+        setShowToast(true);
+      }
+    };
+    fetchOptions();
+  }, []);
 
   const semesterOptions = [
-    { value: 'fall', label: 'Fall' },
-    { value: 'spring', label: 'Spring' },
-    { value: 'summer', label: 'Summer' }
+    { value: 'first_semester', label: 'First Semester' },
+    { value: 'second_semester', label: 'Second Semester' },
+    { value: 'tri_semester', label: 'Tri Semester' }
   ]
 
   const academicYearOptions = [
@@ -58,30 +60,30 @@ const EnrollStudent = () => {
   ]
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
+    const payload = {
+      student_id: values.student,
+      class_id: values.class,
+      enrollment_date: values.enrollmentDate,
+      semester: values.semester,
+      academic_year: values.academicYear
+    };
+
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Mock success - in real app, this would save to database
-      console.log('Enrollment data:', values)
-      
-      setToastMessage('Student enrolled successfully!')
-      setToastType('success')
-      setShowToast(true)
-      
-      resetForm()
-      
-      setTimeout(() => {
-        navigate('/')
-      }, 1500)
+      await api.post('/enrollments/', payload);
+      setToastMessage('Student enrolled successfully!');
+      setToastType('success');
+      setShowToast(true);
+      resetForm();
+      setTimeout(() => navigate('/'), 1500);
     } catch (error) {
-      setToastMessage('Failed to enroll student. Please try again.')
-      setToastType('error')
-      setShowToast(true)
+      const errorMsg = error.response?.data?.msg || 'Failed to enroll student. Please try again.';
+      setToastMessage(errorMsg);
+      setToastType('error');
+      setShowToast(true);
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">

@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import api from '../services/api.js'
 import { Formik, Form } from 'formik'
 import * as Yup from 'yup'
 import { useNavigate, Link } from 'react-router-dom'
@@ -10,6 +11,27 @@ const SubmitGrade = () => {
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
   const [toastType, setToastType] = useState('success')
+  const [enrollmentOptions, setEnrollmentOptions] = useState([]);
+  const [assignmentTypeOptions, setAssignmentTypeOptions] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [enrollmentsRes, assignmentTypesRes] = await Promise.all([
+          api.get('/enrollments/teacher/enrollments'),
+          api.get('/grades/assignment-types')
+        ]);
+        setEnrollmentOptions(enrollmentsRes.data);
+        setAssignmentTypeOptions(assignmentTypesRes.data);
+      } catch (error) {
+        setToastMessage('Could not load form data.');
+        setToastType('error');
+        setShowToast(true);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const validationSchema = Yup.object({
     enrollment: Yup.string()
@@ -28,31 +50,15 @@ const SubmitGrade = () => {
       .max(new Date(), 'Assignment date cannot be in the future')
   })
 
-  const enrollmentOptions = [
-    { value: 'enrollment_001', label: 'Alice Johnson - Mathematics 101 (Fall 2024)' },
-    { value: 'enrollment_002', label: 'Bob Smith - Physics 201 (Fall 2024)' },
-    { value: 'enrollment_003', label: 'Carol Davis - Chemistry 101 (Fall 2024)' },
-    { value: 'enrollment_004', label: 'David Wilson - Biology 201 (Fall 2024)' },
-    { value: 'enrollment_005', label: 'Eva Brown - English 101 (Fall 2024)' },
-    { value: 'enrollment_006', label: 'Frank Miller - History 201 (Fall 2024)' }
-  ]
-
-  const assignmentTypeOptions = [
-    { value: 'homework', label: 'Homework' },
-    { value: 'quiz', label: 'Quiz' },
-    { value: 'exam', label: 'Exam' },
-    { value: 'project', label: 'Project' },
-    { value: 'participation', label: 'Participation' },
-    { value: 'lab', label: 'Laboratory' }
-  ]
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
+    const payload = {
+        enrollment_id: values.enrollment,
+        score: values.grade,
+        remarks: `${values.assignmentType} - ${values.assignmentName} (${values.assignmentDate})`
+    };
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Mock success - in real app, this would save to database
-      console.log('Grade submission data:', values)
+      await api.post('/grades/', payload);
       
       setToastMessage('Grade submitted successfully!')
       setToastType('success')

@@ -1,5 +1,5 @@
 from functools import wraps
-from flask import jsonify
+from flask import jsonify, request
 from flask_jwt_extended import verify_jwt_in_request, get_jwt
 from .models import Role
 
@@ -8,6 +8,8 @@ def role_required(*roles: str):
     def wrapper(fn):
         @wraps(fn)
         def decorator(*args, **kwargs):
+            if request.method == 'OPTIONS':
+                return fn(*args, **kwargs)
             verify_jwt_in_request()
             claims = get_jwt()
             if claims.get("role") not in roles:
