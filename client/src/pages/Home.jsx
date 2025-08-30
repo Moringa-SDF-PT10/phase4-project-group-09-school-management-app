@@ -11,6 +11,11 @@ const Home = () => {
         <p className="mt-4 text-lg text-gray-600">
           The all-in-one platform for students, teachers, and administrators.
         </p>
+        <div className="mt-8">
+          <Link to="/register" className="btn-secondary">
+            Get Started
+          </Link>
+        </div>
       </div>
     </main>
   );
