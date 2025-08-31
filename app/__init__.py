@@ -42,6 +42,7 @@ def create_app():
     # Define allowed origins for CORS
     origins = [
         "https://phase4-project-group-09-school-n9do.onrender.com",  # Deployed frontend
+        "https://phase4-project-group-09-school-tmjg.onrender.com", # Second frontend URL
         "http://localhost:5173",  # Local development
         "http://localhost:5174"   # Added local development port
     ]
