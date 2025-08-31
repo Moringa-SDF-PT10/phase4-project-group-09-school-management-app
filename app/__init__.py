@@ -22,15 +22,15 @@ def create_app():
     jwt.init_app(app)
 
     # Import models so they register with SQLAlchemy metadata
-    from models import User, Class, Enrollment, Grade  # noqa: F401
+    from .models import User, Class, Enrollment, Grade  # noqa: F401
 
     # Register blueprints
-    from routes.auth import auth_bp
-    from routes.users import users_bp
-    from routes.classes import classes_bp
-    from routes.enrollments import enrollments_bp
-    from routes.grades import grades_bp
-    from routes.dashboard import dashboard_bp
+    from .routes.auth import auth_bp
+    from .routes.users import users_bp
+    from .routes.classes import classes_bp
+    from .routes.enrollments import enrollments_bp
+    from .routes.grades import grades_bp
+    from .routes.dashboard import dashboard_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(users_bp, url_prefix="/api/users")
