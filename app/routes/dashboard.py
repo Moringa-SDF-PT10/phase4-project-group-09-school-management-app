@@ -1,9 +1,9 @@
 from flask import Blueprint, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import func
-from .. import db
-from ..models import Class, User, Role, Grade, Enrollment
-from ..utils import role_required
+from __init__ import db
+from models import Class, User, Role, Grade, Enrollment
+from utils import role_required
 
 dashboard_bp = Blueprint("dashboard", __name__)
 
