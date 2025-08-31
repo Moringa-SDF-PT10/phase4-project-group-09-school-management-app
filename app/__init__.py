@@ -40,7 +40,12 @@ def create_app():
     app.register_blueprint(dashboard_bp, url_prefix="/api/dashboard")
 
     # Define allowed origins for CORS
-    origins = "*" # Temporarily allow all origins for debugging
+    origins = [
+        "https://phase4-project-group-09-school-n9do.onrender.com",  # Deployed frontend
+        "https://phase4-project-group-09-school-tmjg.onrender.com", # Second frontend URL
+        "http://localhost:5173",  # Local development
+        "http://localhost:5174"   # Added local development port
+    ]
 
     # Initialize CORS after blueprints are registered
     CORS(app, resources={r"/api/*": {"origins": origins}}, supports_credentials=True, automatic_options=True)
