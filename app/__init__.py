@@ -39,8 +39,14 @@ def create_app():
     app.register_blueprint(grades_bp, url_prefix="/api/grades")
     app.register_blueprint(dashboard_bp, url_prefix="/api/dashboard")
 
+    # Define allowed origins for CORS
+    origins = [
+        "https://phase4-project-group-09-school-tmjg.onrender.com", # Deployed frontend
+        "http://localhost:5173"  # Local development
+    ]
+
     # Initialize CORS after blueprints are registered
-    CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True, automatic_options=True)
+    CORS(app, resources={r"/api/*": {"origins": origins}}, supports_credentials=True, automatic_options=True)
 
     @app.route("/")
     def homepage():
