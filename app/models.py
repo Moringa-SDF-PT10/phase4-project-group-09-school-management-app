@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import Enum
 from werkzeug.security import generate_password_hash, check_password_hash
-from __init__ import db
+from app import db
 
 class Role(str, Enum):
     admin = "admin"

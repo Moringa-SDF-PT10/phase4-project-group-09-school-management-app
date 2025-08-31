@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from sqlalchemy.orm import joinedload
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
-from __init__ import db
+from app import db
 from app.models import Enrollment, Class, User, Role, EnrollmentStatus
 from app.utils import role_required
 from datetime import datetime
