@@ -1,28 +1,21 @@
 services:
-  # Backend - Web Service
   - type: web
     name: school-management-backend
     env: python
+    plan: free
     buildCommand: "pip install -r requirements.txt"
     startCommand: "gunicorn wsgi:app --bind 0.0.0.0:$PORT"
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11 # Or your desired Python version
+        value: 3.11
 
-  # Frontend - Static Site
-  - type: static
+  - type: static_site
     name: school-management-frontend
     env: node
+    plan: free
     rootDir: client
     buildCommand: "npm install && npm run build"
     publishDir: dist
-    envVars:
-      - key: VITE_API_URL
-        fromService:
-          type: web
-          name: school-management-backend
-          property: url
-        # Note: The '/api' suffix will be handled by your frontend code
     routes:
       - type: rewrite
         source: "/*"
