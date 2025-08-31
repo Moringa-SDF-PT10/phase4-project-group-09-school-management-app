@@ -42,7 +42,8 @@ def create_app():
     # Define allowed origins for CORS
     origins = [
         "https://phase4-project-group-09-school-n9do.onrender.com",  # Deployed frontend
-        "http://localhost:5173"  # Local development
+        "http://localhost:5173",  # Local development
+        "http://localhost:5174"   # Added local development port
     ]
 
     # Initialize CORS after blueprints are registered
