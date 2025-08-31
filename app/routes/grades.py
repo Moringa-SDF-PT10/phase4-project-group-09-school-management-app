@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
-from __init__ import db
-from models import Grade, Enrollment, Class, User
+from app import db
+from app.models import Grade, Enrollment, Class, User
 from utils import role_required
 
 grades_bp = Blueprint("grades", __name__)
