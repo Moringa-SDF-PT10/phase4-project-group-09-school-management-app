@@ -1,8 +1,8 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token
 from sqlalchemy.exc import IntegrityError
-from app import db
-from app.models import User, Role
+from .. import db
+from ..models import User, Role
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -45,4 +45,4 @@ def login():
         return {"msg": "Invalid credentials"}, 401
 
     access_token = create_access_token(identity=user.id, additional_claims={"role": user.role.value})
-    return jsonify({"access_token": access_token, "user": user.to_dict()}), 200
+    return {"access_token": access_token, "user": user.to_dict()}, 200
