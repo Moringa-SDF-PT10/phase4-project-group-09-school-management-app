@@ -4,6 +4,8 @@ A *full-stack School Management App* built with *Flask (backend)* and *React + V
 The system provides role-based dashboards and authentication for *admins, teachers, and students*, enabling secure management of users, classes, and grades.
 
 ---
+## Live Demo Link
+https://phase4-project-group-09-school-n9do.onrender.com
 
 ## 🚀 Features
 
@@ -27,30 +29,44 @@ The system provides role-based dashboards and authentication for *admins, teache
 
 ## Sample UI Screenshots
 ![alt text](image.png)
+
 ![alt text](image-1.png)
+
 ![alt text](image-2.png)
+
 ![alt text](image-3.png)
 
 ## 📂 Project Structure
 
-bash
+```bash
 phase4-project-group-09-school-management-app/
-├── Pipfile
+.
+├── Procfile
+├── README.md
 ├── __pycache__
-│   ├── config.cpython-38.pyc
-│   └── wsgi.cpython-38.pyc
+│   └── config.cpython-38.pyc
 ├── app
+│   ├── Pipfile
+│   ├── Pipfile.lock
 │   ├── __init__.py
 │   ├── __pycache__
+│   ├── config.py
+│   ├── instance
+│   ├── manage.py
+│   ├── migrations
 │   ├── models.py
 │   ├── routes
+│   ├── test_models.py
 │   └── utils.py
 ├── client
 │   ├── LICENSE
-│   ├── Pipfile
 │   ├── Pipfile.lock
-│   ├── README.md
+│   ├── dist
 │   ├── eslint.config.js
+│   ├── image-1.png
+│   ├── image-2.png
+│   ├── image-3.png
+│   ├── image.png
 │   ├── index.html
 │   ├── node_modules
 │   ├── package-lock.json
@@ -60,20 +76,19 @@ phase4-project-group-09-school-management-app/
 │   └── tailwind.config.js
 ├── config.py
 ├── instance
-│   └── SMS.db
+│   └── app.db
 ├── manage.py
 ├── migrations
-│   ├── README
 │   ├── __pycache__
 │   ├── alembic.ini
 │   ├── env.py
 │   ├── script.py.mako
 │   └── versions
+├── netlify.toml
 ├── requirements.txt
 ├── seed.py
 └── wsgi.py
-
-
+```
 
 ---
 
