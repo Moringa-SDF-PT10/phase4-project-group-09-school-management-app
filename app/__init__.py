@@ -42,6 +42,10 @@ def create_app():
     # Initialize CORS after blueprints are registered
     CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True, automatic_options=True)
 
+    @app.route("/")
+    def homepage():
+        return "Home page"
+
     @app.get("/api/health")
     def health():
         return {"status": "ok"}, 200
@@ -59,3 +63,8 @@ def create_app():
         return jsonify({"msg": "Missing authorization token"}), 401
 
     return app
+if __name__ == "__main__":
+    app = create_app()
+
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+
