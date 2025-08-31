@@ -1,8 +1,8 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
-from .. import db
-from ..models import Class, User, Role
-from ..utils import role_required
+from __init__ import db
+from models import Class, User, Role
+from utils import role_required
 
 classes_bp = Blueprint("classes", __name__)
 

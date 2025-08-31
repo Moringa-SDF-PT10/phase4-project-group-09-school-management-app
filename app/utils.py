@@ -1,7 +1,7 @@
 from functools import wraps
 from flask import jsonify, request
 from flask_jwt_extended import verify_jwt_in_request, get_jwt
-from .models import Role
+from models import Role
 
 def role_required(*roles: str):
     """Restrict access to users whose JWT 'role' is in roles."""
