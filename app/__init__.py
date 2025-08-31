@@ -15,7 +15,6 @@ jwt = JWTManager()
 
 def create_app():
     app = Flask(__name__)
-    CORS(app, resources={r"/*": {"origins": "https://phase4-project-group-09-school-n9do.onrender.com"}})
     app.config.from_object(Config)
 
     db.init_app(app)
