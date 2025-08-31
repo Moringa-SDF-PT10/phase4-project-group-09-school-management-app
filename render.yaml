@@ -9,13 +9,13 @@ services:
       - key: PYTHON_VERSION
         value: 3.11
 
-  - type: static_site
+  - type: web
     name: school-management-frontend
-    env: node
+    env: static
     plan: free
     rootDir: client
     buildCommand: "npm install && npm run build"
-    publishDir: dist
+    publishDir: build
     routes:
       - type: rewrite
         source: "/*"
