@@ -15,7 +15,7 @@ services:
     plan: free
     rootDir: client
     buildCommand: "npm install && npm run build"
-    publishDir: build
+    staticPublishPath: build
     routes:
       - type: rewrite
         source: "/*"
