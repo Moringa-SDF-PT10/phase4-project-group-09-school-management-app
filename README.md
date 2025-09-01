@@ -28,13 +28,13 @@ https://phase4-project-group-09-school-n9do.onrender.com
 ---
 
 ## Sample UI Screenshots
-![alt text](image.png)
+![alt text](<WhatsApp Image 2025-09-01 at 03.02.55_43eb9076.jpg>)
 
-![alt text](image-1.png)
+![alt text](<WhatsApp Image 2025-09-01 at 03.03.41_8dbfa2bc.jpg>)
 
-![alt text](image-2.png)
+![alt text](<WhatsApp Image 2025-09-01 at 03.04.07_cc5daa03.jpg>)
 
-![alt text](image-3.png)
+![alt text](<WhatsApp Image 2025-09-01 at 03.04.07_cc5daa03-1.jpg>)
 
 ## 📂 Project Structure
 
