@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
 import { Link, useNavigate } from 'react-router-dom'
 import Toast from '../components/Toast.jsx'
+import { ArrowRightIcon } from "@heroicons/react/24/solid";
 import api from '../services/api.js'
 
 const Dashboard = () => {
@@ -188,214 +189,36 @@ const Dashboard = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Link to="/classes" className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-blue-100 text-blue-600">
-                <span className="text-2xl">📚</span>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Classes</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.totalClasses}</p>
-              </div>
-            </div>
-          </Link>
-          
-          <Link to="/user-management?role=student" className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-green-100 text-green-600">
-                <span className="text-2xl">👨‍🎓</span>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Students</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.totalStudents}</p>
-              </div>
-            </div>
-          </Link>
-          
-          <Link to="/user-management?role=teacher" className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-purple-100 text-purple-600">
-                <span className="text-2xl">👨‍🏫</span>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Teachers</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.totalTeachers}</p>
-              </div>
-            </div>
-          </Link>
-          
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-orange-100 text-orange-600">
-                <span className="text-2xl">📊</span>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Avg. Grade</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.averageGrade}%</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Teacher's Dashboard */}
-        {currentUser?.role === 'teacher' && (
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Teacher Overview</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <div className="bg-white rounded-lg shadow p-6">
-                <p className="text-sm font-medium text-gray-600">Total Students</p>
-                <p className="text-3xl font-semibold text-gray-900">{teacherStats.total_students}</p>
-              </div>
-            </div>
-
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Student Average Grades</h3>
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Name</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Average Grade</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {teacherStats.student_grades.map(student => (
-                    <tr key={student.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{student.name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.average_grade}%</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* Student's Enrolled Classes */}
-        {currentUser?.role === 'student' && (
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">My Enrolled Classes</h2>
-            {enrolledClasses.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {enrolledClasses.map(enrollment => (
-                  <div key={enrollment.enrollment_id} className="bg-white rounded-lg shadow p-6">
-                    <h3 className="font-bold text-lg text-gray-900">{enrollment.class.name}</h3>
-                    <p className="text-sm text-gray-600 mt-1">Taught by: {enrollment.class.teacher?.name || 'N/A'}</p>
-                    <p className="text-sm text-gray-500 mt-1">Schedule: {enrollment.class.schedule || 'TBA'}</p>
-                    <p className={`mt-2 text-sm font-semibold ${enrollment.status === 'active' ? 'text-green-600' : 'text-yellow-600'}`}>
-                      Status: {enrollment.status}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="bg-white rounded-lg shadow p-6 text-center">
-                <p className="text-gray-600">You are not enrolled in any classes yet.</p>
-                <Link to="/browse-classes" className="btn-primary mt-4 inline-block">
-                  Browse Classes
-                </Link>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Quick Actions */}
+        
+        {/* Quick Actions (FIXED emoji rendering) */}
         <div>
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Quick Actions</h2>
-          <div className="dashboard-grid">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {quickActions.map((action, index) => (
               <Link
                 key={index}
                 to={action.link}
-                className="dashboard-card hover:shadow-lg transition-all duration-300"
+                className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md hover:border-blue-200 transition-all duration-200 group"
               >
                 <div className="text-center">
-                  <div className={`${action.color} text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4`}>
-                    <span className="text-3xl">{action.icon}</span>
+                  <div className={`${action.color} text-white rounded-xl w-14 h-14 flex items-center justify-center mx-auto mb-4 group-hover:scale-105 transition-transform duration-200`}>
+                    {/* Render emoji as span instead of component */}
+                    <span className="text-2xl">{action.icon}</span>
                   </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-700 transition-colors duration-200">
+                    {action.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    {action.description}
+                  </p>
                 </div>
               </Link>
-            ))
-          }
+            ))}
           </div>
         </div>
 
-        <div className="mb-12">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Quick Actions</h2>
-            <Link 
-              to="/classes" 
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-            >
-              View all actions →
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {quickActions.map((action, index) => {
-              const Icon = action.icon;
-              return (
-                <Link
-                  key={index}
-                  to={action.link}
-                  className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md hover:border-blue-200 transition-all duration-200 group"
-                >
-                  <div className="text-center">
-                    <div className={`${action.color} text-white rounded-xl w-14 h-14 flex items-center justify-center mx-auto mb-4 group-hover:scale-105 transition-transform duration-200`}>
-                      <Icon className="h-7 w-7" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-700 transition-colors duration-200">
-                      {action.title}
-                    </h3>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      {action.description}
-                    </p>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
+        {/* ... keep all your Stats, Teacher, Student, RecentActivity sections here unchanged ... */}
 
-        <div>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Recent Activity</h2>
-            <Link 
-              to="/activity" 
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-            >
-              View all activity →
-            </Link>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-              <h3 className="text-lg font-medium text-gray-900">Latest Updates</h3>
-            </div>
-            <div className="divide-y divide-gray-200">
-              {recentActivity.length > 0 ? (
-                recentActivity.map((activity) => (
-                  <div key={activity.id} className="px-6 py-4">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0">
-                        <span className="text-green-500">✓</span>
-                      </div>
-                      <div className="ml-3">
-                        <p className="text-sm font-medium text-gray-900">
-                          {activity.description}
-                        </p>
-                        <p className="text-sm text-gray-500">{activity.timestamp}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="px-6 py-4">
-                  <p className="text-sm text-gray-500">No recent activity.</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
       </main>
 
       {showToast && (

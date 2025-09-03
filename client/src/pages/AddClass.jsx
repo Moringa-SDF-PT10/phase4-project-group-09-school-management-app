@@ -5,6 +5,7 @@ import * as Yup from 'yup'
 import { useNavigate, Link } from 'react-router-dom'
 import FormInput from '../components/FormInput.jsx'
 import Toast from '../components/Toast.jsx'
+import { ArrowLeftIcon, AcademicCapIcon  } from "@heroicons/react/24/outline";
 
 const AddClass = () => {
   const navigate = useNavigate()

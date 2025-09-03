@@ -166,7 +166,7 @@ const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
 ```
 ---
 ### `👥 Contributors`
-👤 Grace Wangari – Backend Lead (Flask API + Database)
+👤 Faith Wangari – Backend Lead (Flask API + Database)
 
 👤 George Kahuki – Frontend Lead (React UI + Routing)
 
