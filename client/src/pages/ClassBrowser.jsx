@@ -27,18 +27,6 @@ const ClassBrowser = () => {
     fetchClasses();
   }, []);
 
-  const handleEnroll = async (classId) => {
-    try {
-      await api.post(`/enrollments/enroll/${classId}`);
-      setToastMessage('Enrolled successfully!');
-      setToastType('success');
-      setShowToast(true);
-    } catch (error) {
-      setToastMessage(error.response?.data?.msg || 'Failed to enroll.');
-      setToastType('error');
-      setShowToast(true);
-    }
-  };
 
   if (loading) {
     return (
@@ -69,18 +57,6 @@ const ClassBrowser = () => {
                 <p className="text-gray-600 mb-4">Taught by: {cls.teacher?.name || 'N/A'}</p>
                 <p className="text-gray-700 mb-4 h-24 overflow-y-auto">{cls.description}</p>
                 
-                <div className="text-sm text-gray-500 space-y-2 mb-4">
-                  <p><strong>Schedule:</strong> {cls.schedule}</p>
-                  <p><strong>Location:</strong> {cls.location}</p>
-                  <p><strong>Capacity:</strong> {cls.enrollments?.length || 0} / {cls.capacity}</p>
-                </div>
-
-                <button
-                  onClick={() => handleEnroll(cls.id)}
-                  className="w-full btn-primary"
-                >
-                  Enroll
-                </button>
               </div>
             </div>
           ))}

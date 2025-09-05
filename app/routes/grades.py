@@ -97,15 +97,4 @@ def batch_update_grades(class_id):
     return {"msg": "Grades updated successfully"}, 200
 
 
-@grades_bp.get("/assignment-types")
-def get_assignment_types():
-    assignment_types = [
-        {"value": "homework", "label": "Homework"},
-        {"value": "quiz", "label": "Quiz"},
-        {"value": "exam", "label": "Exam"},
-        {"value": "project", "label": "Project"},
-        {"value": "participation", "label": "Participation"},
-        {"value": "lab", "label": "Laboratory"},
-    ]
-    return jsonify(assignment_types), 200
 

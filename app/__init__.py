@@ -39,8 +39,20 @@ def create_app():
     app.register_blueprint(grades_bp, url_prefix="/api/grades")
     app.register_blueprint(dashboard_bp, url_prefix="/api/dashboard")
 
+    # Define allowed origins for CORS
+    origins = [
+        "https://phase4-project-group-09-school-n9do.onrender.com",  # Deployed frontend
+        "https://phase4-project-group-09-school-tmjg.onrender.com", # Second frontend URL
+        "http://localhost:5173",  # Local development
+        "http://localhost:5174"   # Added local development port
+    ]
+
     # Initialize CORS after blueprints are registered
-    CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True, automatic_options=True)
+    CORS(app, resources={r"/api/*": {"origins": origins}}, supports_credentials=True, automatic_options=True)
+
+    @app.route("/")
+    def homepage():
+        return "Home page"
 
     @app.get("/api/health")
     def health():
@@ -59,3 +71,8 @@ def create_app():
         return jsonify({"msg": "Missing authorization token"}), 401
 
     return app
+if __name__ == "__main__":
+    app = create_app()
+
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+

@@ -1,8 +1,9 @@
 import logging
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from ..models import db, User, Role
+from ..models import User, Role
 from ..utils import role_required
+from .. import db
 
 users_bp = Blueprint("users", __name__)
 

@@ -1,14 +1,11 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 
 const Home = () => {
   return (
-    <div className="text-center">
-      <h1 className="text-4xl font-bold mb-4">Welcome to the School Management App</h1>
-      <p className="text-lg mb-8">Please log in or register to continue.</p>
-      <div className="space-x-4">
-        <Link to="/login" className="btn-primary">Login</Link>
-        <Link to="/register" className="btn-secondary">Register</Link>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="text-center">
+        <h1 className="text-4xl font-extrabold text-gray-900">About Ustadi School System</h1>
+        <p className="mt-4 text-lg text-gray-600">Our mission is to provide a seamless and efficient management experience for educational institutions.</p>
       </div>
     </div>
   );
