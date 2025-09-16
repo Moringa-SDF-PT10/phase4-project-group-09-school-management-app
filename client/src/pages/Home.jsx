@@ -10,7 +10,7 @@ const Home = () => {
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
               Welcome to 
-              <span className="text-orange-400"> SchoolBest</span>
+              <span className="text-orange-400"> Ustadi</span>
             </h1>
             <p className="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto">
               Transforming education through innovative technology and comprehensive learning management solutions for modern schools.
@@ -37,7 +37,7 @@ const Home = () => {
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose SchoolBest?</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose Ustadi?</h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
               Our comprehensive platform offers everything you need to manage your educational institution efficiently.
             </p>
