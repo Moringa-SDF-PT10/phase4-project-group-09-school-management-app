@@ -12,6 +12,7 @@ const AddClass = () => {
   const [toastMessage, setToastMessage] = useState('')
   const [toastType, setToastType] = useState('success')
   const [teachers, setTeachers] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
 
   const validationSchema = Yup.object({
     name: Yup.string()
@@ -27,13 +28,19 @@ const AddClass = () => {
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
+        setIsLoading(true)
         const response = await api.get('/users/teachers');
-        setTeachers(response.data);
+        setTeachers(response.data.map(teacher => ({
+          value: teacher.id,
+          label: `${teacher.username} (${teacher.email})`
+        })));
       } catch (error) {
         console.error('Failed to fetch teachers:', error);
         setToastMessage('Could not load teachers list.');
         setToastType('error');
         setShowToast(true);
+      } finally {
+        setIsLoading(false)
       }
     };
     fetchTeachers();
@@ -60,8 +67,8 @@ const AddClass = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-white py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -71,15 +78,15 @@ const AddClass = () => {
             </div>
             <Link
               to="/classes"
-              className="btn-secondary"
+              className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md font-medium hover:bg-gray-300 transition-colors"
             >
-              ← Back to Dashboard
+              ← Back to Classes
             </Link>
           </div>
         </div>
 
-        {/* Form */}
-        <div className="form-container">
+        {/* Form Container */}
+        <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
           <Formik
             initialValues={{
               name: '',
@@ -101,30 +108,33 @@ const AddClass = () => {
                 <FormInput
                   label="Description"
                   name="description"
+                  type="textarea"
                   placeholder="Brief description of the class content and objectives"
                   required
                 />
                 
                 <FormInput
-                  label="Teacher"
+                  label="Assign Teacher"
                   name="teacher_id"
                   type="select"
                   options={teachers}
+                  placeholder={isLoading ? "Loading teachers..." : "Select a teacher"}
+                  disabled={isLoading}
                   required
                 />
 
-                <div className="flex space-x-4 pt-4">
+                <div className="flex space-x-4 pt-6 border-t border-gray-200">
                   <button
                     type="submit"
-                    disabled={isSubmitting}
-                    className="btn-primary flex-1"
+                    disabled={isSubmitting || isLoading}
+                    className="bg-orange-500 text-white px-6 py-3 rounded-md font-medium hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-1"
                   >
                     {isSubmitting ? 'Creating Class...' : 'Create Class'}
                   </button>
                   
                   <Link
                     to="/classes"
-                    className="btn-secondary flex-1 text-center"
+                    className="bg-gray-200 text-gray-700 px-6 py-3 rounded-md font-medium hover:bg-gray-300 transition-colors text-center flex-1"
                   >
                     Cancel
                   </Link>

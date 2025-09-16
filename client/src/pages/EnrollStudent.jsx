@@ -13,6 +13,7 @@ const EnrollStudent = () => {
   const [toastType, setToastType] = useState('success')
   const [studentOptions, setStudentOptions] = useState([])
   const [classOptions, setClassOptions] = useState([])
+  const [loading, setLoading] = useState(true)
 
   const validationSchema = Yup.object({
     student: Yup.string()
@@ -28,20 +29,32 @@ const EnrollStudent = () => {
       .required('Academic year is required')
   })
 
-
   useEffect(() => {
     const fetchOptions = async () => {
       try {
+        setLoading(true);
         const [studentsRes, classesRes] = await Promise.all([
           api.get('/users/students'),
           api.get('/classes/options')
         ]);
-        setStudentOptions(studentsRes.data);
-        setClassOptions(classesRes.data);
+        
+        setStudentOptions(studentsRes.data.map(student => ({
+          value: student.id,
+          label: `${student.username} (${student.email})`
+        })));
+        
+        setClassOptions(classesRes.data.map(cls => ({
+          value: cls.id,
+          label: `${cls.name} - ${cls.teacher?.username || 'No teacher'}`
+        })));
+        
       } catch (error) {
+        console.error('Failed to load options:', error);
         setToastMessage('Failed to load form options.');
         setToastType('error');
         setShowToast(true);
+      } finally {
+        setLoading(false);
       }
     };
     fetchOptions();
@@ -74,7 +87,7 @@ const EnrollStudent = () => {
       setToastType('success');
       setShowToast(true);
       resetForm();
-      setTimeout(() => navigate('/'), 1500);
+      setTimeout(() => navigate('/classes'), 1500);
     } catch (error) {
       const errorMsg = error.response?.data?.msg || 'Failed to enroll student. Please try again.';
       setToastMessage(errorMsg);
@@ -85,27 +98,38 @@ const EnrollStudent = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-orange-200 border-t-orange-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading enrollment form...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-white py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Enroll Student</h1>
-              <p className="text-gray-600 mt-2">Enroll a student in an existing class</p>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Enroll Student</h1>
+              <p className="text-gray-600">Enroll a student in an existing class</p>
             </div>
             <Link
-              to="/"
-              className="btn-secondary"
+              to="/classes"
+              className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md font-medium hover:bg-gray-300 transition-colors"
             >
-              ← Back to Dashboard
+              ← Back to Classes
             </Link>
           </div>
         </div>
 
-        {/* Form */}
-        <div className="form-container">
+        {/* Form Container */}
+        <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
           <Formik
             initialValues={{
               student: '',
@@ -120,18 +144,20 @@ const EnrollStudent = () => {
             {({ isSubmitting }) => (
               <Form className="space-y-6">
                 <FormInput
-                  label="Student"
+                  label="Select Student"
                   name="student"
                   type="select"
                   options={studentOptions}
+                  placeholder="Choose a student"
                   required
                 />
                 
                 <FormInput
-                  label="Class"
+                  label="Select Class"
                   name="class"
                   type="select"
                   options={classOptions}
+                  placeholder="Choose a class"
                   required
                 />
                 
@@ -148,6 +174,7 @@ const EnrollStudent = () => {
                     name="semester"
                     type="select"
                     options={semesterOptions}
+                    placeholder="Select semester"
                     required
                   />
                   
@@ -156,22 +183,33 @@ const EnrollStudent = () => {
                     name="academicYear"
                     type="select"
                     options={academicYearOptions}
+                    placeholder="Select academic year"
                     required
                   />
                 </div>
 
-                <div className="flex space-x-4 pt-4">
+                <div className="flex space-x-4 pt-6 border-t border-gray-200">
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="btn-primary flex-1"
+                    className="bg-orange-500 text-white px-6 py-3 rounded-md font-medium hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-1"
                   >
-                    {isSubmitting ? 'Enrolling Student...' : 'Enroll Student'}
+                    {isSubmitting ? (
+                      <span className="flex items-center justify-center">
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Enrolling...
+                      </span>
+                    ) : (
+                      'Enroll Student'
+                    )}
                   </button>
                   
                   <Link
-                    to="/"
-                    className="btn-secondary flex-1 text-center"
+                    to="/classes"
+                    className="bg-gray-200 text-gray-700 px-6 py-3 rounded-md font-medium hover:bg-gray-300 transition-colors text-center flex-1"
                   >
                     Cancel
                   </Link>

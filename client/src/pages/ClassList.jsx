@@ -12,6 +12,7 @@ const ClassList = () => {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success');
+  const [deleting, setDeleting] = useState({});
 
   useEffect(() => {
     if (currentUser?.role !== 'admin') {
@@ -35,50 +36,66 @@ const ClassList = () => {
     }
   };
 
-  const handleDelete = async (classId) => {
-    if (window.confirm('Are you sure you want to delete this class?')) {
-      try {
-        await api.delete(`/classes/${classId}`);
-        setToastMessage('Class deleted successfully!');
-        setToastType('success');
-        setShowToast(true);
-        fetchClasses(); // Refresh the list
-      } catch (error) {
-        console.error('Failed to delete class:', error);
-        setToastMessage('Failed to delete class.');
-        setToastType('error');
-        setShowToast(true);
-      }
+  const handleDelete = async (classId, className) => {
+    if (!window.confirm(`Are you sure you want to delete "${className}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    setDeleting(prev => ({ ...prev, [classId]: true }));
+    try {
+      await api.delete(`/classes/${classId}`);
+      setToastMessage(`"${className}" deleted successfully!`);
+      setToastType('success');
+      setShowToast(true);
+      fetchClasses(); // Refresh the list
+    } catch (error) {
+      console.error('Failed to delete class:', error);
+      setToastMessage(error.response?.data?.msg || 'Failed to delete class.');
+      setToastType('error');
+      setShowToast(true);
+    } finally {
+      setDeleting(prev => ({ ...prev, [classId]: false }));
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-orange-200 border-t-orange-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading classes...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-white py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Manage Classes</h1>
-            <p className="text-gray-600 mt-2">View, create, edit, and delete classes.</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Manage Classes</h1>
+            <p className="text-gray-600">View, create, edit, and manage all classes</p>
           </div>
-          <div className="space-x-4">
-            <Link to="/class/add" className="btn-primary">
+          <div className="flex space-x-3">
+            <Link 
+              to="/class/add" 
+              className="bg-orange-500 text-white px-4 py-2 rounded-md font-medium hover:bg-orange-600 transition-colors"
+            >
               + Add New Class
             </Link>
-            <Link to="/" className="btn-secondary">
-              ← Back to Dashboard
+            <Link 
+              to="/dashboard" 
+              className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md font-medium hover:bg-gray-300 transition-colors"
+            >
+              ← Dashboard
             </Link>
           </div>
         </div>
 
-        <div className="bg-white shadow-lg rounded-lg overflow-hidden">
+        {/* Classes Table */}
+        <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -92,6 +109,9 @@ const ClassList = () => {
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Teacher
                   </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Students
+                  </th>
                   <th scope="col" className="relative px-6 py-3">
                     <span className="sr-only">Actions</span>
                   </th>
@@ -99,31 +119,66 @@ const ClassList = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {classes.length > 0 ? (
-                  classes.map((c) => (
-                    <tr key={c.id}>
+                  classes.map((cls) => (
+                    <tr key={cls.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{c.name}</div>
+                        <div className="text-sm font-medium text-gray-900">{cls.name}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-normal">
-                        <div className="text-sm text-gray-600">{c.description}</div>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-600 line-clamp-2 max-w-xs">
+                          {cls.description || 'No description'}
+                        </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {c.teacher ? c.teacher.name : 'Not Assigned'}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-600">
+                          {cls.teacher?.username || 'Not assigned'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {cls.enrollment_count || 0} students
+                        </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                        <Link to={`/class/edit/${c.id}`} className="text-indigo-600 hover:text-indigo-900">
+                        <Link 
+                          to={`/class/edit/${cls.id}`}
+                          className="text-orange-600 hover:text-orange-800 transition-colors"
+                        >
                           Edit
                         </Link>
-                        <button onClick={() => handleDelete(c.id)} className="text-red-600 hover:text-red-900">
-                          Delete
+                        <Link 
+                          to={`/class/${cls.id}`}
+                          className="text-green-600 hover:text-green-800 transition-colors"
+                        >
+                          View
+                        </Link>
+                        <button 
+                          onClick={() => handleDelete(cls.id, cls.name)}
+                          disabled={deleting[cls.id]}
+                          className="text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          {deleting[cls.id] ? 'Deleting...' : 'Delete'}
                         </button>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="4" className="px-6 py-4 text-center text-sm text-gray-500">
-                      No classes found. <Link to="/class/add" className="text-indigo-600 hover:text-indigo-900">Create one now</Link>.
+                    <td colSpan="5" className="px-6 py-12 text-center">
+                      <div className="bg-gray-50 p-8 rounded-lg">
+                        <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0l-9 5m9-5v6" />
+                        </svg>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No Classes Found</h3>
+                        <p className="text-gray-600 mb-4">Get started by creating your first class.</p>
+                        <Link 
+                          to="/class/add" 
+                          className="bg-orange-500 text-white px-4 py-2 rounded-md font-medium hover:bg-orange-600 transition-colors"
+                        >
+                          Create First Class
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 )}
