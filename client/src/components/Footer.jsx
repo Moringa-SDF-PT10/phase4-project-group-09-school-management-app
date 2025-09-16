@@ -49,7 +49,7 @@ const Footer = () => {
           <div>
             <h3 className="font-semibold mb-4">Contact Info</h3>
             <div className="space-y-2 text-sm text-gray-400">
-              <p>📧 info@schoolbest.co.ke</p>
+              <p>📧 info@ustadi.co.ke</p>
               <p>📞 +254 700 123 456</p>
               <p>📍 Nairobi, Kenya</p>
             </div>
@@ -58,7 +58,7 @@ const Footer = () => {
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-center">
           <p className="text-sm text-gray-400">
-            © 2024 SchoolBest. All rights reserved.
+            © 2024 Ustadi. All rights reserved.
           </p>
         </div>
       </div>
